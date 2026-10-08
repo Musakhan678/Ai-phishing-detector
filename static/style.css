@@ -1,0 +1,29 @@
+:root { color-scheme: light; font-family: system-ui, sans-serif; color: #162e32; background: #f2f6f4; }
+* { box-sizing: border-box; }
+body { margin: 0; background: radial-gradient(ellipse at top right, #d9ece3, transparent 65%); }
+.container { max-width: 840px; margin: auto; padding: 64px 24px 40px; }
+.eyebrow { font-size: .75rem; font-weight: 700; letter-spacing: .12em; color: #42665c; }
+h1 { font-size: clamp(2.5rem, 7vw, 4rem); line-height: 1.08; letter-spacing: -.04em; margin: 20px 0; }
+.intro { color: #506367; font-size: 1.1rem; line-height: 1.6; max-width: 560px; }
+.card { background: #fff; border: 1px solid #d6e3dd; border-radius: 20px; padding: 30px; margin-top: 32px; box-shadow: 0 12px 40px #16382e08; }
+h2 { font-size: 1.35rem; margin: 0 0 24px; }
+label { font-weight: 650; }
+.hint { font-size: .875rem; color: #596b6d; line-height: 1.5; margin: 8px 0 12px; }
+textarea { width: 100%; min-height: 220px; resize: vertical; border: 1px solid #b2c6be; border-radius: 10px; padding: 16px; font: inherit; line-height: 1.6; color: #162e32; background: #fbfdfc; }
+textarea:focus-visible, button:focus-visible { outline: 3px solid #61a58f; outline-offset: 3px; }
+.actions { display: flex; gap: 12px; margin-top: 18px; }
+button { border: 1px solid #175d48; background: #175d48; color: white; border-radius: 9px; padding: 13px 20px; font: inherit; font-weight: 650; cursor: pointer; }
+button:hover { background: #104733; }
+button span { margin-left: 12px; }
+.secondary { background: white; color: #175d48; border-color: #ccdcd4; }
+.secondary:hover { background: #edf5f0; }
+button:disabled { opacity: .6; cursor: wait; }
+#status:not(:empty) { margin-top: 18px; line-height: 1.5; }
+#status.error { color: #a62d26; }
+.result { margin-top: 24px; padding: 22px; border-radius: 12px; border: 1px solid; }
+.result.phishing { background: #fff3ee; border-color: #efc3b1; }
+.result.legitimate { background: #eef8f2; border-color: #bbd9c5; }
+.result h3 { font-size: 1.5rem; margin: 10px 0; }
+.result p { margin: 0; line-height: 1.6; }
+footer { font-size: .85rem; color: #596b6d; line-height: 1.7; margin: 24px 8px; }
+@media (max-width: 520px) { .container { padding: 36px 16px 20px; } .card { padding: 20px; } .actions { flex-wrap: wrap; } #analyze { flex: 1; } }

@@ -1,9 +1,63 @@
+"""Web interface for the existing fitted phishing detector."""
+from pathlib import Path
+import re
 import joblib
+from flask import Flask, jsonify, render_template, request
+from werkzeug.exceptions import BadRequest, RequestEntityTooLarge
 
-model = joblib.load("phishing_svm_model.pkl")
-tfidf = joblib.load("tfidf_vectorizer.pkl")
+BASE_DIR = Path(__file__).resolve().parent
+model = joblib.load(BASE_DIR / 'phishing_svm_model.pkl')
+tfidf = joblib.load(BASE_DIR / 'tfidf_vectorizer.pkl')
+app = Flask(__name__)
+app.config['MAX_CONTENT_LENGTH'] = 256 * 1024
 
-print("Model loaded successfully!")
-print("Model type:", type(model))
-print("Vectorizer type:", type(tfidf))
-print("Vocabulary size:", len(tfidf.vocabulary_))
+
+def clean_text(text):
+    """Exactly the preprocessing used during training."""
+    text = text.lower()
+    text = re.sub(r'<.*?>', ' ', text)
+    text = re.sub(r'[^\w\s:/.-]', ' ', text)
+    text = re.sub(r'\s+', ' ', text)
+    return text.strip()
+
+
+@app.get('/')
+def index():
+    return render_template('index.html')
+
+
+@app.post('/predict')
+def predict():
+    if not request.is_json:
+        return jsonify(error='Send the email as JSON.'), 415
+    try:
+        data = request.get_json()
+    except BadRequest:
+        return jsonify(error='Invalid JSON request.'), 400
+    email = data.get('email') if isinstance(data, dict) else None
+    if not isinstance(email, str):
+        return jsonify(error='Provide email text.'), 400
+    if len(email) > 50000:
+        return jsonify(error='Keep the email under 50,000 characters.'), 400
+    cleaned_email = clean_text(email)
+    if not cleaned_email:
+        return jsonify(error='Paste an email containing text before analyzing.'), 400
+    try:
+        features = tfidf.transform([cleaned_email])
+        prediction = int(model.predict(features)[0])
+        if prediction not in (0, 1):
+            raise ValueError('Unexpected model label')
+    except Exception:
+        app.logger.exception('Email prediction failed')
+        return jsonify(error='Analysis failed. Please try again.'), 500
+    return jsonify(prediction=prediction,
+                   label='phishing/scam' if prediction == 1 else 'legitimate')
+
+
+@app.errorhandler(RequestEntityTooLarge)
+def too_large(error):
+    return jsonify(error='Request too large. Paste a shorter email.'), 413
+
+
+if __name__ == '__main__':
+    app.run(host='127.0.0.1', port=5000)

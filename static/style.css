@@ -1,8 +1,19 @@
-:root { color-scheme: light; font-family: system-ui, sans-serif; color: #162e32; background: #f2f6f4; }
+:root { color-scheme: light; font-family: system-ui, sans-serif; color: #162e32; background: #f2f6f4; transition: background-color .4s ease; }
+:root[data-prediction="phishing"] { background-color: #faf3f2; }
 * { box-sizing: border-box; }
-body { margin: 0; background: radial-gradient(ellipse at top right, #d9ece3, transparent 65%); }
+body { margin: 0; position: relative; isolation: isolate; background: radial-gradient(ellipse at top right, #d9ece3, transparent 65%); }
+/* Fade a second gradient in: gradient colors do not animate directly. */
+body::before { content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none; background: radial-gradient(ellipse at top right, #f0dcd9, transparent 65%), #faf3f2; opacity: 0; transition: opacity .4s ease; }
+:root[data-prediction="phishing"] body::before { opacity: 1; }
 .container { max-width: 840px; margin: auto; padding: 64px 24px 40px; }
 .brand-lock { display: block; width: 64px; height: 64px; margin-bottom: 20px; }
+.lock-tile { fill: #d9ece3; transition: fill .4s ease; }
+.lock-shackle { stroke: #175d48; transition: stroke .4s ease; }
+.lock-body { fill: #175d48; transition: fill .4s ease; }
+:root[data-prediction="phishing"] .lock-tile { fill: #f0dcd9; }
+:root[data-prediction="phishing"] .lock-shackle { stroke: #a34842; }
+:root[data-prediction="phishing"] .lock-body { fill: #a34842; }
+@media (prefers-reduced-motion: reduce) { :root, body::before, .lock-tile, .lock-shackle, .lock-body { transition: none; } }
 .eyebrow { font-size: .75rem; font-weight: 700; letter-spacing: .12em; color: #42665c; }
 h1 { font-size: clamp(2.5rem, 7vw, 4rem); line-height: 1.08; letter-spacing: -.04em; margin: 20px 0; }
 .intro { color: #506367; font-size: 1.1rem; line-height: 1.6; max-width: 560px; }
@@ -26,5 +37,11 @@ button:disabled { opacity: .6; cursor: wait; }
 .result.legitimate { background: #eef8f2; border-color: #bbd9c5; }
 .result h3 { font-size: 1.5rem; margin: 10px 0; }
 .result p { margin: 0; line-height: 1.6; }
+.explanation { border-top: 1px solid #b2c6be; margin-top: 20px; padding-top: 16px; }
+.explanation h4 { font-size: 1.1rem; margin: 0 0 10px; }
+.signal-groups { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); gap: 16px; margin: 16px 0; }
+.signal-groups[hidden] { display: none; }
+.signal-groups h5 { font-size: .9rem; margin: 0 0 8px; }
+.signal-groups ul { margin: 0; padding-left: 20px; line-height: 1.8; overflow-wrap: anywhere; }
 footer { font-size: .85rem; color: #596b6d; line-height: 1.7; margin: 24px 8px; }
 @media (max-width: 520px) { .container { padding: 36px 16px 20px; } .card { padding: 20px; } .actions { flex-wrap: wrap; } #analyze { flex: 1; } }

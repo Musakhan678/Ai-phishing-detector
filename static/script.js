@@ -6,7 +6,24 @@ const statusMessage = document.querySelector('#status');
 const result = document.querySelector('#result');
 const title = document.querySelector('#result-title');
 const detail = document.querySelector('#result-detail');
+const explanationSummary = document.querySelector('#explanation-summary');
+const signalGroups = document.querySelector('#signal-groups');
+function renderSignals(id, signals) {
+  const list = document.querySelector(id);
+  list.replaceChildren();
+  for (const signal of signals) {
+    const item = document.createElement('li');
+    item.textContent = signal.feature;
+    list.appendChild(item);
+  }
+  if (!signals.length) {
+    const item = document.createElement('li');
+    item.textContent = 'No contributing signals in this direction.';
+    list.appendChild(item);
+  }
+}
 function resetResult() {
+  delete document.documentElement.dataset.prediction;
   result.hidden = true;
   statusMessage.textContent = '';
   statusMessage.className = '';
@@ -40,10 +57,20 @@ form.addEventListener('submit', async (event) => {
     if (!response.ok) throw new Error(data.error || 'Analysis failed. Please try again.');
     if (data.prediction !== 0 && data.prediction !== 1) throw new Error('Unexpected response. Please try again.');
     const phishing = data.prediction === 1;
+    document.documentElement.dataset.prediction = phishing ? 'phishing' : 'legitimate';
     title.textContent = phishing ? 'Phishing / scam' : 'Legitimate';
     detail.textContent = phishing
       ? 'The model flagged this email. Be cautious with links, attachments, and requests for money or personal information.'
       : 'The model classified this email as legitimate. Still verify the sender and any unusual requests.';
+    const explanation = data.explanation;
+    signalGroups.hidden = !explanation || explanation.recognized_features === 0;
+    explanationSummary.textContent = !explanation
+      ? 'The prediction is available, but its explanation could not be generated.'
+      : explanation.recognized_features === 0
+        ? 'No known words or phrases were recognized. The prediction comes from the model’s baseline alone.'
+        : 'The strongest contributing words and phrases in the cleaned email are shown below, strongest first in each direction.';
+    renderSignals('#phishing-signals', explanation?.phishing || []);
+    renderSignals('#legitimate-signals', explanation?.legitimate || []);
     result.className = `result ${phishing ? 'phishing' : 'legitimate'}`;
     result.hidden = false;
     statusMessage.textContent = 'Analysis complete.';

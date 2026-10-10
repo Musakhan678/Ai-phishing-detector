@@ -8,6 +8,9 @@ from werkzeug.exceptions import BadRequest, RequestEntityTooLarge
 BASE_DIR = Path(__file__).resolve().parent
 model = joblib.load(BASE_DIR / 'phishing_svm_model.pkl')
 tfidf = joblib.load(BASE_DIR / 'tfidf_vectorizer.pkl')
+if model.classes_.tolist() != [0, 1]:
+    raise ValueError('Explanations require class order [0, 1].')
+feature_names = tfidf.get_feature_names_out()
 app = Flask(__name__)
 app.config['MAX_CONTENT_LENGTH'] = 256 * 1024
 
@@ -19,6 +22,22 @@ def clean_text(text):
     text = re.sub(r'[^\w\s:/.-]', ' ', text)
     text = re.sub(r'\s+', ' ', text)
     return text.strip()
+
+
+def explain_features(features, limit=3):
+    """Read TF-IDF × coefficient contributions without modifying features."""
+    signals = [
+        {'feature': str(feature_names[index]),
+         'contribution': float(value * model.coef_[0, index])}
+        for index, value in zip(features.indices, features.data)
+    ]
+    return {
+        'phishing': sorted((s for s in signals if s['contribution'] > 0),
+                           key=lambda s: -s['contribution'])[:limit],
+        'legitimate': sorted((s for s in signals if s['contribution'] < 0),
+                             key=lambda s: s['contribution'])[:limit],
+        'recognized_features': int(features.nnz),
+    }
 
 
 @app.get('/')
@@ -50,8 +69,15 @@ def predict():
     except Exception:
         app.logger.exception('Email prediction failed')
         return jsonify(error='Analysis failed. Please try again.'), 500
+    # Explanations never change prediction, even if explanation generation fails.
+    try:
+        explanation = explain_features(features)
+    except Exception:
+        app.logger.exception('Feature explanation failed')
+        explanation = None
     return jsonify(prediction=prediction,
-                   label='phishing/scam' if prediction == 1 else 'legitimate')
+                   label='phishing/scam' if prediction == 1 else 'legitimate',
+                   explanation=explanation)
 
 
 @app.errorhandler(RequestEntityTooLarge)

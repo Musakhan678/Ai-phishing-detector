@@ -10,7 +10,13 @@
 <body>
 <main class="container">
   <header>
-    <img class="brand-lock" src="{{ url_for('static', filename='lock.svg') }}" alt="" width="64" height="64">
+    <svg class="brand-lock" xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" fill="none" aria-hidden="true">
+      <rect class="lock-tile" width="64" height="64" rx="18"/>
+      <path class="lock-shackle" d="M23 29v-8a9 9 0 0 1 18 0v8" stroke-width="3.5" stroke-linecap="round"/>
+      <rect class="lock-body" x="17" y="28" width="30" height="24" rx="5"/>
+      <circle cx="32" cy="38" r="3" fill="#F2F6F4"/>
+      <path d="M32 40v5" stroke="#F2F6F4" stroke-width="3" stroke-linecap="round"/>
+    </svg>
     <span class="eyebrow">EMAIL CHECK</span>
     <h1>A second look at<br>your inbox.</h1>
     <p class="intro">Paste an email to see if it's a scam or legitimate.</p>
@@ -31,6 +37,15 @@
       <span class="eyebrow">MODEL PREDICTION</span>
       <h3 id="result-title"></h3>
       <p id="result-detail"></p>
+      <div class="explanation">
+        <h4>What influenced the model?</h4>
+        <p id="explanation-summary"></p>
+        <div id="signal-groups" class="signal-groups">
+          <div><h5>Signals toward phishing/scam</h5><ul id="phishing-signals"></ul></div>
+          <div><h5>Signals toward legitimate</h5><ul id="legitimate-signals"></ul></div>
+        </div>
+        <p class="hint">These are model signals, not proof of phishing or safety. Only a few signals are shown; words and phrases may overlap. The model's baseline also affects its result. These are not probabilities.</p>
+      </div>
     </section>
     <noscript><p>Enable JavaScript to analyze emails on this page.</p></noscript>
   </section>

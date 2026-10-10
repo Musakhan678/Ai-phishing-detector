@@ -1,19 +1,18 @@
-:root { color-scheme: light; font-family: system-ui, sans-serif; color: #162e32; background: #f2f6f4; transition: background-color .4s ease; }
-:root[data-prediction="phishing"] { background-color: #faf3f2; }
+:root { color-scheme: light; font-family: system-ui, sans-serif; color: #162e32; background: #f5f6f7; }
 * { box-sizing: border-box; }
-body { margin: 0; position: relative; isolation: isolate; background: radial-gradient(ellipse at top right, #d9ece3, transparent 65%); }
-/* Fade a second gradient in: gradient colors do not animate directly. */
-body::before { content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none; background: radial-gradient(ellipse at top right, #f0dcd9, transparent 65%), #faf3f2; opacity: 0; transition: opacity .4s ease; }
-:root[data-prediction="phishing"] body::before { opacity: 1; }
+body { margin: 0; }
 .container { max-width: 840px; margin: auto; padding: 64px 24px 40px; }
 .brand-lock { display: block; width: 64px; height: 64px; margin-bottom: 20px; }
-.lock-tile { fill: #d9ece3; transition: fill .4s ease; }
-.lock-shackle { stroke: #175d48; transition: stroke .4s ease; }
-.lock-body { fill: #175d48; transition: fill .4s ease; }
+.lock-tile { fill: #e6e9ec; transition: fill .4s ease; }
+.lock-shackle { stroke: #59646e; transition: stroke .4s ease; }
+.lock-body { fill: #59646e; transition: fill .4s ease; }
+:root[data-prediction="legitimate"] .lock-tile { fill: #d9ece3; }
+:root[data-prediction="legitimate"] .lock-shackle { stroke: #175d48; }
+:root[data-prediction="legitimate"] .lock-body { fill: #175d48; }
 :root[data-prediction="phishing"] .lock-tile { fill: #f0dcd9; }
 :root[data-prediction="phishing"] .lock-shackle { stroke: #a34842; }
 :root[data-prediction="phishing"] .lock-body { fill: #a34842; }
-@media (prefers-reduced-motion: reduce) { :root, body::before, .lock-tile, .lock-shackle, .lock-body { transition: none; } }
+@media (prefers-reduced-motion: reduce) { .lock-tile, .lock-shackle, .lock-body { transition: none; } }
 .eyebrow { font-size: .75rem; font-weight: 700; letter-spacing: .12em; color: #42665c; }
 h1 { font-size: clamp(2.5rem, 7vw, 4rem); line-height: 1.08; letter-spacing: -.04em; margin: 20px 0; }
 .intro { color: #506367; font-size: 1.1rem; line-height: 1.6; max-width: 560px; }

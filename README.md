@@ -9,7 +9,7 @@ A college passion project that turns a trained text classifier into an understan
 - Responsive Flask + HTML/CSS/JavaScript interface with loading, error, and Clear states.
 - Existing Linear SVM inference: `0 = legitimate`, `1 = phishing/scam`.
 - Feature explanations using learned coefficients and the submitted email's TF-IDF values.
-- Muted red lock/background for phishing results, green for legitimate results, and smooth transitions that respect reduced-motion preferences.
+- A neutral page background in every state; muted red lock/result card for phishing, green for legitimate, and a neutral lock before analysis, while analyzing, and after Clear. Lock transitions respect reduced-motion preferences.
 - Input validation and warnings that a legitimate prediction does not guarantee safety.
 - No retraining, confidence percentages, or threshold adjustments during inference.
 

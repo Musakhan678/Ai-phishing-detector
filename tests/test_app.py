@@ -1,5 +1,6 @@
 """Run with python -m unittest discover -s tests -v."""
 import hashlib
+import json
 import unittest
 from types import SimpleNamespace
 import numpy as np
@@ -67,7 +68,7 @@ class AppTests(unittest.TestCase):
 
     def test_display_filter_keeps_meaningful_phrases_and_threshold_boundary(self):
         names = np.array(['the', 'subject', 'dear', 'this is', 'your account',
-                          'account verification', 'tiny', 'boundary', 'negative tiny'])
+                          'account verification', 'tiny', 'urgent', 'negative tiny'])
         coefficients = np.array([[.9, -.8, .7, -.6, .4, -.3, .009, -.01, -.009]])
         features = csr_matrix(np.ones((1, len(names))))
         with patch('app.feature_names', names), \
@@ -77,7 +78,7 @@ class AppTests(unittest.TestCase):
                          [{'feature': 'your account', 'contribution': .4}])
         self.assertEqual(explanation['legitimate'], [
             {'feature': 'account verification', 'contribution': -.3},
-            {'feature': 'boundary', 'contribution': -.01}])
+            {'feature': 'urgent', 'contribution': -.01}])
         self.assertEqual(explanation['recognized_features'], len(names))
 
     def test_filter_can_leave_both_directions_empty(self):
@@ -99,7 +100,8 @@ class AppTests(unittest.TestCase):
                 before_score = model.decision_function(features).copy()
                 # Empty filler list and zero cutoff reproduce the old display policy.
                 with patch('app.EXPLANATION_FILLER_WORDS', frozenset()), \
-                     patch('app.MIN_EXPLANATION_CONTRIBUTION', 0):
+                     patch('app.MIN_EXPLANATION_CONTRIBUTION', 0), \
+                     patch('app.EXPLANATION_SINGLE_WORDS', frozenset(tfidf.get_feature_names_out())):
                     before = self.client.post('/predict', json={'email': email})
                 after = self.client.post('/predict', json={'email': email})
                 self.assertEqual(before.status_code, 200)
@@ -115,6 +117,7 @@ class AppTests(unittest.TestCase):
 
     def test_explanation_copy(self):
         html = self.client.get('/').get_data(as_text=True)
+        self.assertIn('What text patterns did the model notice?', html)
         self.assertIn('Words pushing the model toward phishing/scam', html)
         self.assertIn('Words pushing the model toward legitimate', html)
         self.assertIn('statistical associations learned from training data', html)
@@ -124,8 +127,48 @@ class AppTests(unittest.TestCase):
         for direction in ['phishing', 'legitimate']:
             values = [s['contribution'] for s in explanation[direction]]
             self.assertLessEqual(len(values), 3)
-            self.assertEqual(values, sorted(values, reverse=direction == 'phishing'))
+            keys = [(len(s['feature'].split()) != 2, -abs(s['contribution']), s['feature']) for s in explanation[direction]]
+            self.assertEqual(keys, sorted(keys))
             self.assertTrue(all(v > 0 if direction == 'phishing' else v < 0 for v in values))
+
+    def test_phrase_preference_generic_words_and_original_signs(self):
+        names = np.array(['customer', 'help', 'some', 'ahmed', 'purchase', 'package',
+                          'password', 'deadline', 'provide', 'phishing', 'urgent',
+                          'your account', 'account verification'])
+        coefficients = np.array([[.8, .7, .6, .5, .4, .3, -.6, -.5, -.4, .7, .8, .02, -.02]])
+        with patch('app.feature_names', names), patch('app.model', SimpleNamespace(coef_=coefficients)):
+            result = explain_features(csr_matrix(np.ones((1, len(names)))))
+        self.assertEqual([s['feature'] for s in result['phishing']],
+                         ['your account', 'urgent', 'phishing'])
+        self.assertEqual([s['feature'] for s in result['legitimate']],
+                         ['account verification', 'password', 'deadline'])
+        self.assertTrue(all(s['contribution'] < 0 for s in result['legitimate']))
+
+    def test_exact_user_examples_preserve_predictions_scores_and_features(self):
+        examples = json.loads((BASE_DIR / 'tests/example_emails.json').read_text())
+        expected = {
+            'prize_scam': (1, 0.6006624954852358),
+            'order_confirmation': (1, 0.06806335403616998),
+            'bank_impersonation': (1, 1.3395130075219248),
+            'school_homework': (0, -0.8523759615057804),
+        }
+        for name, email in examples.items():
+            with self.subTest(example=name):
+                features = tfidf.transform([clean_text(email)])
+                original = features.copy()
+                response = self.client.post('/predict', json={'email': email})
+                self.assertEqual(response.status_code, 200)
+                self.assertEqual(response.json['prediction'], expected[name][0])
+                explain_features(features)
+                self.assertAlmostEqual(float(model.decision_function(features)[0]), expected[name][1], places=12)
+                np.testing.assert_array_equal(features.data, original.data)
+                np.testing.assert_array_equal(features.indices, original.indices)
+                np.testing.assert_array_equal(features.indptr, original.indptr)
+                for direction in ['phishing', 'legitimate']:
+                    for signal in response.json['explanation'][direction]:
+                        index = tfidf.vocabulary_[signal['feature']]
+                        self.assertNotEqual(features[0, index], 0)
+                        self.assertEqual(signal['contribution'], float(features[0, index] * model.coef_[0, index]))
 
     def test_unknown_vocabulary(self):
         response = self.client.post('/predict', json={'email': 'zzzxqvzzz'})

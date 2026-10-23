@@ -38,13 +38,28 @@
       <h3 id="result-title"></h3>
       <p id="result-detail"></p>
       <div class="explanation">
-        <h4>What influenced the model?</h4>
+        <h4>What text patterns did the model notice?</h4>
         <p id="explanation-summary"></p>
         <div id="signal-groups" class="signal-groups">
           <div><h5>Words pushing the model toward phishing/scam</h5><ul id="phishing-signals"></ul></div>
           <div><h5>Words pushing the model toward legitimate</h5><ul id="legitimate-signals"></ul></div>
         </div>
-        <p class="hint">These are statistical associations learned from training data, not proof that individual words indicate fraud or safety. Only a few signals are shown; words and phrases may overlap. Hidden features and the model's baseline also affect its result. These are not probabilities.</p>
+        <p class="hint">These are statistical associations learned from training data, not proof that individual words indicate fraud or safety. Even a word such as “password” can push toward legitimate because of how it appeared in training; that does not make a password request safe. Only selected patterns are shown; phrases may overlap. Hidden features and the model's baseline also affect its result. These are not probabilities.</p>
+        <details class="prediction-guide" id="prediction-guide">
+          <summary>How does this prediction work?</summary>
+          <div class="guide-content">
+            <p>TF-IDF turns the email's words and short phrases into numbers that describe their importance. A trained Linear SVM combines those numbers using patterns learned from labeled phishing/scam and legitimate emails.</p>
+            <p>An ordinary word such as “package” may push toward phishing, while “password” may push toward legitimate. The model learned statistical associations from its training emails, not universal rules about those words. A password request is not safe just because a word pushes toward legitimate.</p>
+            <p>The final prediction combines many text features and the model's baseline, a starting score learned during training. Features can push in opposite directions. The selected patterns above are only part of this calculation, not probabilities or proof of safety.</p>
+            <p class="hint">Select a displayed pattern to inspect its direction and email context. Context is shown for reading only; it is not an additional learned feature.</p>
+            <section id="selected-pattern" hidden aria-labelledby="selected-pattern-title" aria-live="polite">
+              <h5 id="selected-pattern-title"></h5>
+              <p id="selected-pattern-direction"></p>
+              <h5>Email context — not an additional model feature</h5>
+              <blockquote id="selected-pattern-context"></blockquote>
+            </section>
+          </div>
+        </details>
       </div>
     </section>
     <noscript><p>Enable JavaScript to analyze emails on this page.</p></noscript>

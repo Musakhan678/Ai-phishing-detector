@@ -1,0 +1,6 @@
+{
+  "prize_scam": "Subject: Congratulations! You Have Won a Prize\n \nDear Winner,\n \nYou have been selected to receive a special cash prize. To claim your reward, provide your personal information and payment details before the deadline.\n \nPrize Claims Team",
+  "order_confirmation": "Subject: Your Order Has Been Shipped\n \nHello Sarah,\n \nThank you for your purchase. Your order has been successfully processed and shipped. The package is expected to arrive on Monday.\n \nKind regards,\nCustomer Support",
+  "bank_impersonation": "Subject: Important Account Security Notice\n \nDear Customer,\n \nYour bank account has been temporarily restricted due to suspicious activity. Please confirm your account information and password immediately to restore access.\n \nSecurity Department",
+  "school_homework": "Subject: Physics Homework\n \nHi Ahmed,\n \nThe teacher has uploaded the answers to our physics assignment. I finished questions 1 to 8, but I need some help with question 9.\n \nCan we discuss it tomorrow at school?\n \nThanks,\nOmar"
+}

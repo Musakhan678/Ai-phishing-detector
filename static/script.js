@@ -8,21 +8,57 @@ const title = document.querySelector('#result-title');
 const detail = document.querySelector('#result-detail');
 const explanationSummary = document.querySelector('#explanation-summary');
 const signalGroups = document.querySelector('#signal-groups');
+const predictionGuide = document.querySelector('#prediction-guide');
+const selectedPattern = document.querySelector('#selected-pattern');
+let analyzedEmail = '';
+
+function showPattern(signal) {
+  document.querySelector('#selected-pattern-title').textContent = `Learned feature: “${signal.feature}”`;
+  const direction = signal.contribution > 0 ? 'phishing/scam' : 'legitimate';
+  document.querySelector('#selected-pattern-direction').textContent =
+    `This feature pushes toward ${direction} in this email. Its TF-IDF value multiplied by its learned SVM weight gives a ${signal.contribution > 0 ? 'positive' : 'negative'} contribution. This describes the model, not whether the request is safe.`;
+  // Match literal feature words with whitespace between them. Do not fabricate
+  // raw context when cleaning/tokenization made a phrase non-contiguous.
+  const escaped = signal.feature.split(' ').map(word => word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+  const pattern = new RegExp(`(?<![\\p{L}\\p{N}_])${escaped.join('\\s+')}(?![\\p{L}\\p{N}_])`, 'iu');
+  const match = pattern.exec(analyzedEmail);
+  const context = document.querySelector('#selected-pattern-context');
+  if (match) {
+    const start = Math.max(0, match.index - 70);
+    const end = Math.min(analyzedEmail.length, match.index + match[0].length + 70);
+    context.textContent = `${start ? '…' : ''}${analyzedEmail.slice(start, end)}${end < analyzedEmail.length ? '…' : ''}`;
+  } else {
+    context.textContent = 'No direct matching passage in the original email. This feature was found after text cleaning and tokenization; no context is inferred.';
+  }
+  selectedPattern.hidden = false;
+  predictionGuide.open = true;
+}
 function renderSignals(id, signals) {
   const list = document.querySelector(id);
   list.replaceChildren();
   for (const signal of signals) {
     const item = document.createElement('li');
-    item.textContent = signal.feature;
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'pattern-button';
+    button.textContent = signal.feature;
+    button.setAttribute('aria-label', `Explain pattern: ${signal.feature}`);
+    button.setAttribute('aria-controls', 'selected-pattern');
+    button.addEventListener('click', () => showPattern(signal));
+    item.appendChild(button);
     list.appendChild(item);
   }
   if (!signals.length) {
     const item = document.createElement('li');
-    item.textContent = 'No notable text features to display';
+    item.textContent = 'No notable text patterns to display';
     list.appendChild(item);
   }
 }
 function resetResult() {
+  analyzedEmail = '';
+  predictionGuide.open = false;
+  selectedPattern.hidden = true;
+  document.querySelector('#selected-pattern-context').textContent = '';
   delete document.documentElement.dataset.prediction;
   result.hidden = true;
   statusMessage.textContent = '';
@@ -63,12 +99,13 @@ form.addEventListener('submit', async (event) => {
       ? 'The model flagged this email. Be cautious with links, attachments, and requests for money or personal information.'
       : 'The model classified this email as legitimate. Still verify the sender and any unusual requests.';
     const explanation = data.explanation;
+    analyzedEmail = email.value;
     signalGroups.hidden = !explanation || explanation.recognized_features === 0;
     explanationSummary.textContent = !explanation
       ? 'The prediction is available, but its explanation could not be generated.'
       : explanation.recognized_features === 0
         ? 'No known words or phrases were recognized. The prediction comes from the model’s baseline alone.'
-        : 'The strongest remaining words and phrases are shown first in each direction. Common filler words and very small contributions are hidden from this display only; they still affect the model’s prediction.';
+        : 'Actual model phrases are preferred, followed by security-related single words. Within each group, stronger contributions appear first. This is a selected view, not the complete explanation; hidden features still affect the prediction.';
     renderSignals('#phishing-signals', explanation?.phishing || []);
     renderSignals('#legitimate-signals', explanation?.legitimate || []);
     result.className = `result ${phishing ? 'phishing' : 'legitimate'}`;

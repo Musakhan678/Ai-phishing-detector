@@ -155,9 +155,24 @@ feature contribution = email's TF-IDF feature value × learned coefficient
 SVM decision score = intercept + sum(all feature contributions)
 ```
 
-Positive contributions push toward phishing/scam; negative contributions push toward legitimate. The page lists up to three strongest remaining contributions in each direction, using only features present in the cleaned email. For display only, it hides common filler words, phrases made entirely of filler words, and contributions with absolute magnitude below **0.01 SVM score units**. Phrases such as `your account` survive because they contain an informative word. This cutoff is a presentation choice, not a probability or classification threshold. All original features still contribute to the unchanged prediction and score. If a direction has no qualifying signals, the page says “No notable text features to display.” It does not display calibrated probabilities or confidence percentages.
+Positive contributions push toward phishing/scam; negative contributions push toward legitimate. The display policy in `app.py` selects up to three patterns in each direction:
+
+1. Consider only nonzero features actually present in the transformed email and fitted vocabulary. No surrounding text is invented or assigned a contribution.
+2. Omit contributions below **0.01 absolute SVM score units** and phrases made entirely of filler words.
+3. Prefer eligible **bigrams**, ranked by absolute contribution within that group. A phrase must contain a security-category term or a documented account/payment, commerce, or school-context anchor from `EXPLANATION_PHRASE_CONTEXT_TERMS`. This removes generic phrases such as `let me` and `need help`. A phrase like `your account` can qualify despite containing a filler word; `package` requires phrase context and is never displayed alone.
+4. Fill remaining slots with eligible single words, ranked by absolute contribution. Single words must belong to the documented `EXPLANATION_SECURITY_TERMS` categories: identity/access, urgency/threats, or money/incentives. This positive eligibility policy excludes arbitrary names and generic retail/help words without maintaining an ever-growing blacklist. Categories are presentation choices, not fraud rules or a comprehensive security dictionary; review them explicitly when expanding the UI.
+5. Preserve the original sign, regardless of intuition. For example, `password` or `deadline` may legitimately appear on the model's legitimate side; that does not make a password request safe. `provide` alone is not eligible, but an actual qualifying phrase containing it may be.
+6. Show fewer than three when needed, or “No notable text patterns to display” when a direction has none.
+
+A preferred bigram can appear before a stronger single word, so this is a **selected presentation**, not the three largest contributions overall. Bigrams are not automatically security-relevant or causal; generic phrases can still appear. This policy trades completeness for readable context and cannot eliminate misleading learned associations. It never changes TF-IDF values, decision scores, prediction labels, or thresholds. The cutoff is not a probability threshold. No confidence percentage is displayed.
 
 These are **model signals, not proof of phishing or safety**. Unigrams and bigrams may overlap; the displayed subset does not add up to the full decision score. The intercept also affects the result. If no vocabulary features are recognized, the prediction comes from the intercept alone.
+
+### Optional explanation guide and context
+
+The result includes a native, keyboard-accessible **How does this prediction work?** section, collapsed by default. It explains TF-IDF, the Linear SVM, opposing contributions, and the model baseline in plain language.
+
+Selecting a displayed feature opens this section and describes the actual sign of its contribution. When a case-insensitive, whole-word/phrase match exists in the submitted email, a short excerpt of the original text is shown as **email context, not an additional model feature**. Only the first matching passage is shown; this does not attribute the contribution to that occurrence alone. If cleaning or tokenization prevents a direct match, the interface explains that no matching original passage is available. No context is inferred or assigned a contribution. Original text is inserted using `textContent`, not rendered as HTML. Clear, editing the input, or starting a new analysis resets the panel.
 
 ### A concrete limitation: a short wire-transfer request
 

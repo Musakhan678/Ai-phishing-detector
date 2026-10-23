@@ -42,5 +42,15 @@ button:disabled { opacity: .6; cursor: wait; }
 .signal-groups[hidden] { display: none; }
 .signal-groups h5 { font-size: .9rem; margin: 0 0 8px; }
 .signal-groups ul { margin: 0; padding-left: 20px; line-height: 1.8; overflow-wrap: anywhere; }
+.pattern-button { border: 0; border-radius: 3px; padding: 2px 0; background: transparent; color: inherit; font: inherit; text-align: left; text-decoration: underline dotted; text-underline-offset: 4px; overflow-wrap: anywhere; }
+.pattern-button:hover { background: #ffffff80; text-decoration-style: solid; }
+.prediction-guide { margin-top: 18px; border: 1px solid #b2c6be; border-radius: 10px; padding: 16px; }
+.prediction-guide summary { font-weight: 650; cursor: pointer; }
+.prediction-guide summary:focus-visible { outline: 3px solid #61a58f; outline-offset: 3px; }
+.guide-content { border-top: 1px solid #b2c6be; margin-top: 14px; padding-top: 14px; }
+.guide-content p + p { margin-top: 12px; }
+#selected-pattern { margin-top: 18px; }
+#selected-pattern h5 { font-size: .9rem; margin: 12px 0 8px; overflow-wrap: anywhere; }
+#selected-pattern-context { margin: 0; border-left: 3px solid #b2c6be; padding-left: 12px; white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.6; }
 footer { font-size: .85rem; color: #596b6d; line-height: 1.7; margin: 24px 8px; }
 @media (max-width: 520px) { .container { padding: 36px 16px 20px; } .card { padding: 20px; } .actions { flex-wrap: wrap; } #analyze { flex: 1; } }

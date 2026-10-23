@@ -21,6 +21,17 @@ EXPLANATION_FILLER_WORDS = frozenset('''
 '''.split())
 # SVM score units, not a probability or a classification threshold.
 MIN_EXPLANATION_CONTRIBUTION = 0.01
+# Single words need security context on their own. Categories describe display
+# relevance, NOT fraud/safety rules; coefficients retain their original signs.
+EXPLANATION_SECURITY_TERMS = {
+    'identity and access': frozenset('account password passwords login credentials verification verify authentication security phishing'.split()),
+    'urgency and threats': frozenset('urgent urgently suspended suspension overdue threatened deadline'.split()),
+    'money and incentives': frozenset('wire transfer payment invoice refund prize lottery winner winnings scam fraud'.split()),
+}
+EXPLANATION_SINGLE_WORDS = frozenset().union(*EXPLANATION_SECURITY_TERMS.values())
+# These need a phrase for context; they are not useful standalone signals.
+EXPLANATION_PHRASE_CONTEXT_TERMS = EXPLANATION_SINGLE_WORDS | frozenset(
+    'bank banking credit card order purchase package delivery shipment school homework assignment'.split())
 app = Flask(__name__)
 app.config['DEBUG'] = False
 app.config['MAX_CONTENT_LENGTH'] = 256 * 1024
@@ -38,22 +49,28 @@ def clean_text(text):
 def explain_features(features, limit=3):
     """Filter the displayed signals only; leave all inference features intact.
 
-    Phrases survive if at least one word is informative, so 'your account'
-    is retained while 'this is' is omitted. Hidden signals still affect score.
+    Prefer real vocabulary bigrams over standalone words. Only categorized
+    security terms qualify as standalone words. Hidden signals still affect score.
     """
     signals = []
     for index, value in zip(features.indices, features.data):
         feature = str(feature_names[index])
+        words = feature.split()
         contribution = float(value * model.coef_[0, index])
-        if (all(word in EXPLANATION_FILLER_WORDS for word in feature.split())
+        if (all(word in EXPLANATION_FILLER_WORDS for word in words)
+                or (len(words) == 1 and feature not in EXPLANATION_SINGLE_WORDS)
+                or (len(words) > 1 and not any(
+                    word in EXPLANATION_PHRASE_CONTEXT_TERMS for word in words))
                 or abs(contribution) < MIN_EXPLANATION_CONTRIBUTION):
             continue
         signals.append({'feature': feature, 'contribution': contribution})
     return {
         'phishing': sorted((s for s in signals if s['contribution'] > 0),
-                           key=lambda s: -s['contribution'])[:limit],
+                           key=lambda s: (len(s['feature'].split()) != 2,
+                                          -s['contribution'], s['feature']))[:limit],
         'legitimate': sorted((s for s in signals if s['contribution'] < 0),
-                             key=lambda s: s['contribution'])[:limit],
+                             key=lambda s: (len(s['feature'].split()) != 2,
+                                            s['contribution'], s['feature']))[:limit],
         'recognized_features': int(features.nnz),
     }
 

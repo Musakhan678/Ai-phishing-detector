@@ -2,7 +2,7 @@
 from pathlib import Path
 import re
 import joblib
-from safety import detect_warning_signs
+from safety import detect_warning_signs, build_safety_advice
 from flask import Flask, jsonify, render_template, request
 from werkzeug.exceptions import BadRequest, RequestEntityTooLarge
 
@@ -111,10 +111,12 @@ def predict():
     except Exception:
         app.logger.exception('Feature explanation failed')
         explanation = None
+    warning_signs = detect_warning_signs(email)
     return jsonify(prediction=prediction,
                    label='phishing/scam' if prediction == 1 else 'legitimate',
                    explanation=explanation,
-                   warning_signs=detect_warning_signs(email))
+                   warning_signs=warning_signs,
+                   safety_advice=build_safety_advice(prediction, warning_signs))
 
 
 @app.errorhandler(RequestEntityTooLarge)

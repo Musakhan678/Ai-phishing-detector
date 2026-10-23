@@ -28,6 +28,17 @@ function renderWarnings(warnings) {
     list.appendChild(item);
   }
 }
+function renderAdvice(advice) {
+  document.querySelector('#advice-introduction').textContent = advice.introduction;
+  const list = document.querySelector('.safety-actions');
+  list.replaceChildren();
+  for (const step of advice.steps) {
+    const item = document.createElement('li');
+    item.textContent = step;
+    list.appendChild(item);
+  }
+  document.querySelector('#caution-reminder').textContent = advice.reminder;
+}
 let analyzedEmail = '';
 
 function showPattern(signal) {
@@ -113,12 +124,18 @@ form.addEventListener('submit', async (event) => {
     if (!response.ok) throw new Error(data.error || 'Analysis failed. Please try again.');
     if (data.prediction !== 0 && data.prediction !== 1) throw new Error('Unexpected response. Please try again.');
     const phishing = data.prediction === 1;
+    const warningException = !phishing && (data.warning_signs || []).length > 0;
     document.documentElement.dataset.prediction = phishing ? 'phishing' : 'legitimate';
-    title.textContent = phishing ? 'Warning: This email may be a scam.' : 'No strong scam warning detected';
+    title.textContent = phishing ? 'Warning: This email may be a scam.'
+      : warningException ? 'The AI did not flag a scam, but text checks found a warning.'
+        : 'No strong scam warning detected';
     detail.textContent = phishing
       ? 'Our AI found text patterns associated with suspicious emails. This is a warning, not proof that the sender is a scammer.'
-      : 'Our AI did not find a strong scam pattern. It can miss scams and has not verified that this email is safe.';
+      : warningException
+        ? 'The separate checks found concerning wording. Read the warning signs below before responding. The AI can miss scams.'
+        : 'Our AI did not find a strong scam pattern. It can miss scams and has not verified that this email is safe.';
     renderWarnings(data.warning_signs || []);
+    renderAdvice(data.safety_advice);
     const explanation = data.explanation;
     analyzedEmail = email.value;
     signalGroups.hidden = !explanation || explanation.recognized_features === 0;

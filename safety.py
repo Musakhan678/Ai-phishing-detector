@@ -51,3 +51,48 @@ def detect_warning_signs(text):
     add('pressure', 'Pressure to act quickly',
         'The wording pressures you to act quickly. Pause and check the request before responding.', pressure.group() if pressure else None)
     return warnings
+
+
+def build_safety_advice(prediction, warnings):
+    """Choose wording only. Never override the model's label or score."""
+    if prediction == 0 and not warnings:
+        return {
+            'mode': 'calm',
+            'introduction': "No strong signs of a scam were detected in the email's text. This is reassuring, but the email hasn't been verified as safe.",
+            'steps': [
+                'You can review the email as usual, but be cautious about unexpected requests.',
+                "If you're asked for money, passwords, or personal details, verify the sender first.",
+                'If something seems unusual, contact the sender through a trusted channel.',
+            ],
+            'reminder': 'The AI can miss scams. Stay cautious if anything seems unusual.',
+        }
+    steps = [
+        "Don't click unexpected links or open unfamiliar attachments.",
+        "Don't share passwords, verification codes, or financial details.",
+        'Contact the organization through its official website or a trusted phone number.',
+    ]
+    if prediction == 0:
+        codes = {warning['code'] for warning in warnings}
+        targeted = []
+        if 'secrets' in codes:
+            targeted.append("Don't send the password or verification code requested.")
+        if 'money' in codes:
+            targeted.append("Don't send money or financial details until you have checked the request through a trusted channel.")
+        if 'account' in codes:
+            targeted.append('Check the account restriction claim through an official website or a phone number you already trust.')
+        if 'pressure' in codes:
+            targeted.append('Pause before acting. Do not let urgent wording rush you.')
+        # Exactly three steps. Multiple matched concerns share the first step.
+        steps[0] = ' '.join(targeted) or 'Pause and check the warning signs before responding.'
+        return {
+            'mode': 'warning_exception',
+            'introduction': 'The AI did not flag this email as a scam, but the separate text checks found a warning sign. Follow the cautious steps below; the email has not been verified as safe.',
+            'steps': steps,
+            'reminder': 'The text checks and AI can disagree. Take the specific warning seriously even when the AI does not flag a scam.',
+        }
+    return {
+        'mode': 'caution',
+        'introduction': 'The email contains text patterns associated with scams. Treat unexpected requests cautiously; this is a warning, not proof of fraud.',
+        'steps': steps,
+        'reminder': 'Check unexpected requests before responding. We have not verified the sender or any links.',
+    }

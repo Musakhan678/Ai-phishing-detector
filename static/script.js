@@ -10,6 +10,24 @@ const explanationSummary = document.querySelector('#explanation-summary');
 const signalGroups = document.querySelector('#signal-groups');
 const predictionGuide = document.querySelector('#prediction-guide');
 const selectedPattern = document.querySelector('#selected-pattern');
+const aiExplanation = document.querySelector('#ai-explanation');
+function renderWarnings(warnings) {
+  const list = document.querySelector('#warning-signs');
+  list.replaceChildren();
+  document.querySelector('#warning-empty').hidden = warnings.length > 0;
+  for (const warning of warnings) {
+    const item = document.createElement('li');
+    const heading = document.createElement('h5');
+    heading.textContent = warning.title;
+    const description = document.createElement('p');
+    description.textContent = warning.description;
+    const evidence = document.createElement('p');
+    evidence.className = 'hint';
+    evidence.textContent = `Matched wording: “${warning.evidence}”`;
+    item.append(heading, description, evidence);
+    list.appendChild(item);
+  }
+}
 let analyzedEmail = '';
 
 function showPattern(signal) {
@@ -32,6 +50,7 @@ function showPattern(signal) {
   }
   selectedPattern.hidden = false;
   predictionGuide.open = true;
+  aiExplanation.open = true;
 }
 function renderSignals(id, signals) {
   const list = document.querySelector(id);
@@ -56,6 +75,7 @@ function renderSignals(id, signals) {
 }
 function resetResult() {
   analyzedEmail = '';
+  aiExplanation.open = false;
   predictionGuide.open = false;
   selectedPattern.hidden = true;
   document.querySelector('#selected-pattern-context').textContent = '';
@@ -94,10 +114,11 @@ form.addEventListener('submit', async (event) => {
     if (data.prediction !== 0 && data.prediction !== 1) throw new Error('Unexpected response. Please try again.');
     const phishing = data.prediction === 1;
     document.documentElement.dataset.prediction = phishing ? 'phishing' : 'legitimate';
-    title.textContent = phishing ? 'Phishing / scam' : 'Legitimate';
+    title.textContent = phishing ? 'Warning: This email may be a scam.' : 'No strong scam warning detected';
     detail.textContent = phishing
-      ? 'The model flagged this email. Be cautious with links, attachments, and requests for money or personal information.'
-      : 'The model classified this email as legitimate. Still verify the sender and any unusual requests.';
+      ? 'Our AI found text patterns associated with suspicious emails. This is a warning, not proof that the sender is a scammer.'
+      : 'Our AI did not find a strong scam pattern. It can miss scams and has not verified that this email is safe.';
+    renderWarnings(data.warning_signs || []);
     const explanation = data.explanation;
     analyzedEmail = email.value;
     signalGroups.hidden = !explanation || explanation.recognized_features === 0;
@@ -110,6 +131,7 @@ form.addEventListener('submit', async (event) => {
     renderSignals('#legitimate-signals', explanation?.legitimate || []);
     result.className = `result ${phishing ? 'phishing' : 'legitimate'}`;
     result.hidden = false;
+    title.focus();
     statusMessage.textContent = 'Analysis complete.';
   } catch (error) {
     statusMessage.className = 'error';

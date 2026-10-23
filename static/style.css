@@ -1,4 +1,4 @@
-:root { color-scheme: light; font-family: system-ui, sans-serif; color: #162e32; background: #f5f6f7; }
+:root { color-scheme: light; font-family: system-ui, sans-serif; font-size: 18px; line-height: 1.6; color: #162e32; background: #f5f6f7; }
 * { box-sizing: border-box; }
 body { margin: 0; }
 .container { max-width: 840px; margin: auto; padding: 64px 24px 40px; }
@@ -21,7 +21,7 @@ h2 { font-size: 1.35rem; margin: 0 0 24px; }
 label { font-weight: 650; }
 .hint { font-size: .875rem; color: #596b6d; line-height: 1.5; margin: 8px 0 12px; }
 textarea { width: 100%; min-height: 220px; resize: vertical; border: 1px solid #b2c6be; border-radius: 10px; padding: 16px; font: inherit; line-height: 1.6; color: #162e32; background: #fbfdfc; }
-textarea:focus-visible, button:focus-visible { outline: 3px solid #61a58f; outline-offset: 3px; }
+textarea:focus-visible, button:focus-visible { outline: 3px solid #175d48; outline-offset: 3px; }
 .actions { display: flex; gap: 12px; margin-top: 18px; }
 button { border: 1px solid #175d48; background: #175d48; color: white; border-radius: 9px; padding: 13px 20px; font: inherit; font-weight: 650; cursor: pointer; }
 button:hover { background: #104733; }
@@ -44,9 +44,20 @@ button:disabled { opacity: .6; cursor: wait; }
 .signal-groups ul { margin: 0; padding-left: 20px; line-height: 1.8; overflow-wrap: anywhere; }
 .pattern-button { border: 0; border-radius: 3px; padding: 2px 0; background: transparent; color: inherit; font: inherit; text-align: left; text-decoration: underline dotted; text-underline-offset: 4px; overflow-wrap: anywhere; }
 .pattern-button:hover { background: #ffffff80; text-decoration-style: solid; }
+.pattern-button { min-height: 44px; }
+.advice-section { border-top: 1px solid #b2c6be; margin-top: 24px; padding-top: 20px; }
+.advice-section h4 { font-size: 1.15rem; margin: 0 0 12px; }
+.warning-signs { padding-left: 24px; }
+.warning-signs li { margin-bottom: 18px; }
+.warning-signs h5 { font-size: 1rem; margin: 0 0 6px; }
+.safety-actions { padding-left: 28px; }
+.safety-actions li { padding-left: 5px; margin-bottom: 14px; }
+.simple-explanation { margin: 16px 0 !important; }
+.prediction-guide summary { min-height: 44px; align-content: center; }
+#result-title:focus-visible { outline: 3px solid #175d48; outline-offset: 5px; }
 .prediction-guide { margin-top: 18px; border: 1px solid #b2c6be; border-radius: 10px; padding: 16px; }
 .prediction-guide summary { font-weight: 650; cursor: pointer; }
-.prediction-guide summary:focus-visible { outline: 3px solid #61a58f; outline-offset: 3px; }
+.prediction-guide summary:focus-visible { outline: 3px solid #175d48; outline-offset: 3px; }
 .guide-content { border-top: 1px solid #b2c6be; margin-top: 14px; padding-top: 14px; }
 .guide-content p + p { margin-top: 12px; }
 #selected-pattern { margin-top: 18px; }

@@ -35,6 +35,7 @@ The artifacts load once at startup, using paths relative to `app.py`. The same t
 ```text
 Ai-phishing-detector/
 ├── app.py                       # Flask routes, cleaning, inference, attribution
+├── safety.py                    # Separate literal-text warning checks
 ├── phishing_svm_model.pkl       # Existing fitted LinearSVC
 ├── tfidf_vectorizer.pkl         # Existing fitted vectorizer
 ├── requirements.txt             # Tested dependency versions
@@ -168,11 +169,19 @@ A preferred bigram can appear before a stronger single word, so this is a **sele
 
 These are **model signals, not proof of phishing or safety**. Unigrams and bigrams may overlap; the displayed subset does not add up to the full decision score. The intercept also affects the result. If no vocabulary features are recognized, the prediction comes from the intercept alone.
 
-### Optional explanation guide and context
+### Accessible results and independent safety advice
 
-The result includes a native, keyboard-accessible **How does this prediction work?** section, collapsed by default. It explains TF-IDF, the Linear SVM, opposing contributions, and the model baseline in plain language.
+The default result uses “Warning: This email may be a scam.” or “No strong scam warning detected,” not a claim that the email is safe. Larger text, clear headings, visible keyboard focus, and three practical recommendations support people with limited digital literacy. The page remains neutral; result text communicates the outcome as well as color.
 
-Selecting a displayed feature opens this section and describes the actual sign of its contribution. When a case-insensitive, whole-word/phrase match exists in the submitted email, a short excerpt of the original text is shown as **email context, not an additional model feature**. Only the first matching passage is shown; this does not attribute the contribution to that occurrence alone. If cleaning or tokenization prevents a direct match, the interface explains that no matching original passage is available. No context is inferred or assigned a contribution. Original text is inserted using `textContent`, not rendered as HTML. Clear, editing the input, or starting a new analysis resets the panel.
+**What should you watch out for?** uses independent rules in `safety.py`, not SVM contributions or a second classifier. The rules look for explicit request verbs followed within 80 characters in the same sentence/line by passwords/codes or financial details; money-transfer wording; an account restriction claim; and explicit urgency. Deadlines alone are not treated as suspicious unless another rule matches. Common negated safety advice such as “never share your password” is excluded. Matched original wording is shown so the check can be inspected. No sender identity, links, reputation, or account state is verified. Rules can miss indirect wording, other languages, obfuscation, or negations outside their limited window; quoted examples may also trigger them. They do not establish fraudulent intent.
+
+When no rule matches, the page says “No specific warning signs identified from the text alone” and reminds users that scams can still be present. Rules are applied regardless of the model label. Their output cannot change the original features, prediction, score, or threshold. For example, the known order-confirmation false positive remains a model warning even though the rules find no specific warning sign.
+
+**What should you do?** always provides three short recommendations: avoid unexpected links/attachments, contact the organization through a trusted official channel, and do not share passwords/codes/financial details in response to unexpected requests. The model can miss scams even when no strong warning is detected.
+
+**Learn how the AI made its decision** is a native keyboard-accessible disclosure, collapsed by default. It starts with a plain-language explanation and contains the original feature lists. A further collapsed **Technical details** subsection retains the TF-IDF/SVM explanation, baseline, and opposing-contribution caveats.
+
+Selecting a displayed feature opens the technical subsection and describes the actual sign of its contribution. When a case-insensitive, whole-word/phrase match exists in the submitted email, a short excerpt of the original text is shown as **email context, not an additional model feature**. Only the first matching passage is shown; this does not attribute the contribution to that occurrence alone. If cleaning or tokenization prevents a direct match, the interface explains that no matching original passage is available. No context is inferred or assigned a contribution. Original text is inserted using `textContent`, not rendered as HTML. Clear, editing the input, or starting a new analysis resets the disclosures.
 
 ### A concrete limitation: a short wire-transfer request
 
@@ -233,7 +242,7 @@ In your project terminal, after reviewing your files:
 
 ```sh
 git status
-git add app.py requirements.txt .gitignore .python-version render.yaml README.md tests/test_app.py templates/index.html static/script.js static/style.css
+git add app.py safety.py tests/test_safety.py requirements.txt .gitignore .python-version render.yaml README.md tests/test_app.py templates/index.html static/script.js static/style.css
 git diff --cached --stat
 git commit -m "Prepare Flask app for Render deployment"
 git push origin HEAD:main
@@ -246,7 +255,7 @@ Use these commands only in a clone of this repository with its GitHub origin con
 1. Back up your current PyCharm project.
 2. On GitHub, open the repository and choose **Add file → Upload files**.
 3. Upload the prepared files in their correct locations. For nested files, open `templates/`, `static/`, or `tests/` on GitHub first and upload the corresponding files there. Do not flatten these folders.
-4. Include `.gitignore`, `.python-version`, `render.yaml`, `requirements.txt`, `README.md`, and `app.py` in the repository root. Hidden files may need to be made visible in your file explorer.
+4. Include `.gitignore`, `.python-version`, `render.yaml`, `requirements.txt`, `README.md`, `safety.py`, and `app.py` in the repository root. Hidden files may need to be made visible in your file explorer.
 5. Commit the changes to `main`. Keep the existing model artifacts unchanged.
 
 ## Deploy on Render (manual Web Service)

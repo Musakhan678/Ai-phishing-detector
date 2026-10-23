@@ -2,6 +2,7 @@
 from pathlib import Path
 import re
 import joblib
+from safety import detect_warning_signs
 from flask import Flask, jsonify, render_template, request
 from werkzeug.exceptions import BadRequest, RequestEntityTooLarge
 
@@ -112,7 +113,8 @@ def predict():
         explanation = None
     return jsonify(prediction=prediction,
                    label='phishing/scam' if prediction == 1 else 'legitimate',
-                   explanation=explanation)
+                   explanation=explanation,
+                   warning_signs=detect_warning_signs(email))
 
 
 @app.errorhandler(RequestEntityTooLarge)

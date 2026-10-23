@@ -18,7 +18,7 @@ function renderSignals(id, signals) {
   }
   if (!signals.length) {
     const item = document.createElement('li');
-    item.textContent = 'No contributing signals in this direction.';
+    item.textContent = 'No notable text features to display';
     list.appendChild(item);
   }
 }
@@ -68,7 +68,7 @@ form.addEventListener('submit', async (event) => {
       ? 'The prediction is available, but its explanation could not be generated.'
       : explanation.recognized_features === 0
         ? 'No known words or phrases were recognized. The prediction comes from the model’s baseline alone.'
-        : 'The strongest contributing words and phrases in the cleaned email are shown below, strongest first in each direction.';
+        : 'The strongest remaining words and phrases are shown first in each direction. Common filler words and very small contributions are hidden from this display only; they still affect the model’s prediction.';
     renderSignals('#phishing-signals', explanation?.phishing || []);
     renderSignals('#legitimate-signals', explanation?.legitimate || []);
     result.className = `result ${phishing ? 'phishing' : 'legitimate'}`;

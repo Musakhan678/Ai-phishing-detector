@@ -11,7 +11,18 @@ tfidf = joblib.load(BASE_DIR / 'tfidf_vectorizer.pkl')
 if model.classes_.tolist() != [0, 1]:
     raise ValueError('Explanations require class order [0, 1].')
 feature_names = tfidf.get_feature_names_out()
+# Display policy only: never remove these words from the inference input.
+EXPLANATION_FILLER_WORDS = frozenset('''
+    the a an and or to of is are was were be been being am do does did
+    have has had this that these those it its i me my we us our you your
+    he him his she her they them their in on at by for from with as if
+    but so than then can could would should will shall may might not
+    subject dear hi hello regards sincerely thanks thank please
+'''.split())
+# SVM score units, not a probability or a classification threshold.
+MIN_EXPLANATION_CONTRIBUTION = 0.01
 app = Flask(__name__)
+app.config['DEBUG'] = False
 app.config['MAX_CONTENT_LENGTH'] = 256 * 1024
 
 
@@ -25,12 +36,19 @@ def clean_text(text):
 
 
 def explain_features(features, limit=3):
-    """Read TF-IDF × coefficient contributions without modifying features."""
-    signals = [
-        {'feature': str(feature_names[index]),
-         'contribution': float(value * model.coef_[0, index])}
-        for index, value in zip(features.indices, features.data)
-    ]
+    """Filter the displayed signals only; leave all inference features intact.
+
+    Phrases survive if at least one word is informative, so 'your account'
+    is retained while 'this is' is omitted. Hidden signals still affect score.
+    """
+    signals = []
+    for index, value in zip(features.indices, features.data):
+        feature = str(feature_names[index])
+        contribution = float(value * model.coef_[0, index])
+        if (all(word in EXPLANATION_FILLER_WORDS for word in feature.split())
+                or abs(contribution) < MIN_EXPLANATION_CONTRIBUTION):
+            continue
+        signals.append({'feature': feature, 'contribution': contribution})
     return {
         'phishing': sorted((s for s in signals if s['contribution'] > 0),
                            key=lambda s: -s['contribution'])[:limit],
@@ -86,4 +104,4 @@ def too_large(error):
 
 
 if __name__ == '__main__':
-    app.run(host='127.0.0.1', port=5000)
+    app.run(host='127.0.0.1', port=5000, debug=False)

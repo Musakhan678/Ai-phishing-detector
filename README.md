@@ -2,7 +2,7 @@
 
 A college passion project that turns a trained text classifier into an understandable web application. Paste an email to receive a **legitimate** or **phishing/scam** prediction and see a few words or phrases that influenced the model.
 
-**Evaluation transparency:** the model achieved approximately **99.56% accuracy on its held-out internal test**, but **70% on a small independent 100-email validation set**. These measure performance on different email distributions; the internal result is not a claim of 99.56% accuracy on arbitrary real-world emails.
+**Evaluation transparency:** there is no single universal accuracy figure. SVM v2a achieved **99.43% on the original internal test**, **88% on a small external set used during development**, and **64.75% on the independent PhishNChips benchmark**. SVM v1 achieved **99.56%**, **70%**, and **60.15%** on those respective evaluations. The development set is not an untouched final benchmark. On PhishNChips, v2a's high phishing precision (**98.05%**) coexists with low recall (**30.1%**), so most phishing-labeled examples were missed.
 
 ## Features
 
@@ -78,39 +78,73 @@ Inference uses only `transform()` and `predict()`. It never calls `fit()` or `fi
 
 ## Evaluation
 
-These results were supplied by the project author from prior ML evaluation. They were **not rerun by the web application tests**, and the evaluation corpora are not included in this repository.
+The following verified results were supplied by the project author. They are additional evaluations and model-version comparisons, not replacements for the earlier results. The web application tests did **not** rerun these dataset evaluations; evaluation corpora and training scripts are not included here.
 
-| Evaluation | Dataset size | Reported accuracy | Interpretation |
-| --- | ---: | ---: | --- |
-| Held-out internal test | 1,583 | ≈99.56% | Strong performance within the internal data distribution |
-| Small independent validation | 100: 77 legitimate, 23 phishing | 70% | All 23 phishing emails detected, but 30 legitimate emails falsely flagged |
-| Non-overlapping SpamAssassin evaluation | 5,209 | ≈75.54% | 3,481 of 3,491 legitimate emails classified correctly |
+**Artifact version:** the repository loads the two existing saved artifacts. Their filenames and scikit-learn serialization version do not establish whether they correspond to SVM v1 or v2a. Confirm that provenance before attributing either version's benchmark results to the running website. No artifact was replaced during web development or deployment preparation.
 
-### Internal test
+| Evaluation | Composition | SVM v1 accuracy | SVM v2a accuracy | Role |
+| --- | --- | ---: | ---: | --- |
+| Original internal test | 1,583: 602 legitimate, 981 phishing/scam | 99.56% | 99.43% | Internal held-out evaluation |
+| External phishing validation | 100 unique: 77 legitimate, 23 phishing | 70% | **88%** | Small, template-like development evaluation |
+| SpamAssassin | 5,209: 3,491 legitimate, 1,718 generic spam | 75.54% | 75.89% | External spam evaluation, not phishing accuracy |
+| Independent PhishNChips | 2,000: 1,000 legitimate, 1,000 phishing-labeled | 60.15% | **64.75%** | Independent URL-grounded benchmark |
+| Constructed website diagnostics | Six manually constructed examples | 3/6 matched expectations | 5/6 matched expectations | Functional diagnostics, not an accuracy estimate |
 
-Confusion matrix, with rows = actual labels and columns = predicted labels in `[legitimate, phishing/scam]` order:
+All confusion matrices below use **rows = actual labels, columns = predicted labels**, ordered `[legitimate, phishing/scam]`. For SpamAssassin, the second actual category is **generic spam**, not phishing.
 
-| Actual / predicted | Legitimate | Phishing/scam |
-| --- | ---: | ---: |
-| Legitimate | 600 | 2 |
-| Phishing/scam | 5 | 976 |
+### Original internal test
 
-The model correctly classified 1,576 of 1,583 emails. This internal result should not be substituted for external performance.
+| Version | Confusion matrix | Correct / total | Accuracy |
+| --- | --- | ---: | ---: |
+| SVM v1 | `[[600, 2], [5, 976]]` | 1,576 / 1,583 | 99.56% |
+| SVM v2a | `[[599, 3], [6, 975]]` | 1,574 / 1,583 | 99.43% |
 
-### Independent 100-email validation
+Near-duplicate/template grouping was used to reduce train/test leakage. These results describe the internal distribution, not performance on arbitrary real-world messages. V2a's internal accuracy is slightly lower than v1's; neither internal number should be used as the sole headline for deployment.
 
-The validation set was deduplicated and had zero exact overlap with the training corpus. Its confusion matrix, derived from the supplied counts, is:
+### External phishing validation — used during development
 
-| Actual / predicted | Legitimate | Phishing/scam |
-| --- | ---: | ---: |
-| Legitimate | 47 | 30 |
-| Phishing/scam | 0 | 23 |
+| Version | Confusion matrix | Correct / total | Accuracy |
+| --- | --- | ---: | ---: |
+| SVM v1 | `[[47, 30], [0, 23]]` | 70 / 100 | 70% |
+| SVM v2a | `[[67, 10], [2, 21]]` | 88 / 100 | 88% |
 
-The model detected all phishing examples in this small sample, but falsely flagged 30 of 77 legitimate emails, particularly commercial-style messages. This produces **70 correct classifications out of 100**, not 99.56%. A small sample and zero exact overlap do not guarantee broad representativeness or absence of related templates.
+The 100 unique emails contain 77 legitimate and 23 phishing messages. Earlier overlap checks reported zero exact overlap with the training corpus. This small, template-like set was used during model development, so it is **not a fully untouched final benchmark**, even without exact duplicates.
 
-### SpamAssassin evaluation
+V1 detected all 23 phishing examples but falsely flagged 30 legitimate examples, particularly commercial-style messages. V2a reduced those false positives to 10 while missing two phishing examples. The improvement on this development set must not be described as an independent final estimate of generalization.
 
-On 5,209 emails reported as non-overlapping with training, overall accuracy was approximately 75.54%. Legitimate classification was strong: 3,481 of 3,491 legitimate emails were correctly classified. Spam and phishing are different categories; this result should be interpreted within the evaluation's labeling protocol, which is not fully documented here. A complete confusion matrix is not reconstructed from rounded accuracy.
+### SpamAssassin — generic spam is not phishing
+
+| Version | Confusion matrix | Correct / total | Accuracy |
+| --- | --- | ---: | ---: |
+| SVM v1 | `[[3481, 10], [1264, 454]]` | 3,935 / 5,209 | 75.54% |
+| SVM v2a | `[[3481, 10], [1246, 472]]` | 3,953 / 5,209 | 75.89% |
+
+This external evaluation contains 3,491 legitimate emails and 1,718 generic spam emails, previously reported as non-overlapping with training. Both versions correctly classified 3,481 legitimate emails. Many generic spam examples were assigned the legitimate label. **These figures are not phishing detection accuracy:** the positive evaluation category differs from the classifier's intended phishing/scam task.
+
+### Independent PhishNChips benchmark
+
+| Version | Confusion matrix | Correct / total | Accuracy |
+| --- | --- | ---: | ---: |
+| SVM v1 | `[[983, 17], [780, 220]]` | 1,203 / 2,000 | 60.15% |
+| SVM v2a | `[[994, 6], [699, 301]]` | 1,295 / 2,000 | 64.75% |
+
+The benchmark contains 1,000 legitimate and 1,000 phishing-labeled examples. The author reports no exact duplicate cleaned messages and no exact overlaps with v2a training data. Exact-overlap checks do not rule out all semantic or template similarity.
+
+V2a phishing-class metrics:
+
+| Metric | Value | Meaning on these examples |
+| --- | ---: | --- |
+| Precision | 98.05% | 301 of 307 phishing predictions were correct |
+| Recall | 30.1% | 301 of 1,000 phishing-labeled examples were detected |
+| F1 | 46.06% | Harmonic mean of precision and recall |
+
+Despite high precision and only six legitimate false positives, **699 of 1,000 phishing-labeled examples were missed**. High precision therefore does not establish reliable phishing coverage.
+
+PhishNChips is a URL-grounded benchmark with many ordinary-looking messages. This application classifies email text; it does not independently verify URL reputation or inspect destinations. That task mismatch helps contextualize the limitations but does not remove the missed detections. The **64.75% independent benchmark result is distinct from the 88% development-set result**.
+
+### Manual website diagnostics
+
+Six constructed diagnostic examples produced 3/6 expected labels for v1 and 5/6 for v2a. These checks help investigate application behavior; six selected examples are not a representative sample and must not be advertised as accuracy estimates. They are also separate from the automated application test suite.
 
 ## How explanations work
 
@@ -121,7 +155,7 @@ feature contribution = email's TF-IDF feature value × learned coefficient
 SVM decision score = intercept + sum(all feature contributions)
 ```
 
-Positive contributions push toward phishing/scam; negative contributions push toward legitimate. The page lists up to three strongest nonzero contributions in each direction, using only features present in the cleaned email. It does not display calibrated probabilities or confidence percentages.
+Positive contributions push toward phishing/scam; negative contributions push toward legitimate. The page lists up to three strongest remaining contributions in each direction, using only features present in the cleaned email. For display only, it hides common filler words, phrases made entirely of filler words, and contributions with absolute magnitude below **0.01 SVM score units**. Phrases such as `your account` survive because they contain an informative word. This cutoff is a presentation choice, not a probability or classification threshold. All original features still contribute to the unchanged prediction and score. If a direction has no qualifying signals, the page says “No notable text features to display.” It does not display calibrated probabilities or confidence percentages.
 
 These are **model signals, not proof of phishing or safety**. Unigrams and bigrams may overlap; the displayed subset does not add up to the full decision score. The intercept also affects the result. If no vocabulary features are recognized, the prediction comes from the intercept alone.
 
@@ -146,7 +180,7 @@ Open `http://127.0.0.1:5000` in your local browser. Keep the terminal running; s
 
 scikit-learn is pinned to **1.6.1**, matching the version recorded in both saved artifacts. The other declared dependencies use versions tested with these artifacts on Python 3.12. Only load trusted pickle/joblib files: deserializing untrusted artifacts can execute code.
 
-The Flask development server is for local development. This repository does not currently provide a public deployment; GitHub hosts the code, not the running Flask application.
+The Flask development server is for local development. Render must use Gunicorn, not `python app.py`. Gunicorn is installed only on non-Windows platforms; PyCharm on Windows can continue using Flask locally. The application has debug disabled. GitHub hosts the code, not the running Flask application.
 
 ## Testing
 
@@ -160,7 +194,8 @@ Application tests verify integration and behavior; they do not remeasure dataset
 
 ## Known limitations and safety
 
-- Distribution shift can substantially change accuracy and false-positive rates, as the external results demonstrate.
+- Distribution shift can substantially change accuracy and false-positive rates. The 100-email set was used during development; PhishNChips is the independent benchmark. Neither supplies a universal accuracy figure.
+- High precision can coexist with low recall: v2a missed 699 of 1,000 PhishNChips phishing-labeled examples. Text-only inference does not independently establish URL reputation.
 - Short messages and unfamiliar wording can be missed. Words outside the fitted vocabulary contribute no features.
 - Text classification does not authenticate the sender, inspect email headers, scan attachments, or verify linked websites.
 - No SVM score or feature contribution is a calibrated probability.
@@ -170,4 +205,71 @@ Application tests verify integration and behavior; they do not remeasure dataset
 
 ## Project status
 
-Local application development and testing. Public hosting and production deployment are separate future steps. The trained model and vectorizer remain unchanged.
+Prepared for Render deployment; no live deployment or public URL has been created. The trained model and vectorizer remain unchanged.
+
+
+## Publish to GitHub when ready
+
+No deployment credentials or API keys are required in the project. Do not upload `.venv`, `.env`, raw datasets, backups, or private emails. Both existing `.pkl` files must remain in the repository root alongside `app.py`.
+
+### Git workflow (recommended)
+
+In your project terminal, after reviewing your files:
+
+```sh
+git status
+git add app.py requirements.txt .gitignore .python-version render.yaml README.md tests/test_app.py templates/index.html static/script.js static/style.css
+git diff --cached --stat
+git commit -m "Prepare Flask app for Render deployment"
+git push origin HEAD:main
+```
+
+Use these commands only in a clone of this repository with its GitHub origin configured. Review staged changes before committing; never force-push to resolve a rejected update. If another change has reached GitHub, fetch and reconcile it first. The two model files are already tracked in this repository and need no replacement. For a new repository, explicitly add the two trusted artifacts as well.
+
+### If you use downloaded ZIP copies instead of Git
+
+1. Back up your current PyCharm project.
+2. On GitHub, open the repository and choose **Add file → Upload files**.
+3. Upload the prepared files in their correct locations. For nested files, open `templates/`, `static/`, or `tests/` on GitHub first and upload the corresponding files there. Do not flatten these folders.
+4. Include `.gitignore`, `.python-version`, `render.yaml`, `requirements.txt`, `README.md`, and `app.py` in the repository root. Hidden files may need to be made visible in your file explorer.
+5. Commit the changes to `main`. Keep the existing model artifacts unchanged.
+
+## Deploy on Render (manual Web Service)
+
+These are instructions for a later user-initiated deployment; preparing these files does not publish the website.
+
+1. Create/sign in to a Render account and connect GitHub through Render's normal authorization screen. Never paste credentials into source files or this chat.
+2. Choose **New → Web Service**, select this repository, and choose branch **main**.
+3. Choose the **Python** runtime. Leave **Root Directory** blank because `app.py` is at the repository root.
+4. Use this build command:
+
+   ```sh
+   python -m pip install -r requirements.txt && python -m unittest discover -s tests -v
+   ```
+
+5. Use this start command:
+
+   ```sh
+   gunicorn --bind 0.0.0.0:$PORT --workers 1 --threads 2 --timeout 120 --access-logfile - --error-logfile - app:app
+   ```
+
+   `app:app` means the Flask variable `app` in `app.py`. Render supplies `PORT`. One worker keeps the memory footprint modest; two threads allow concurrent requests without changing the model.
+
+6. Set environment variables `PYTHON_VERSION=3.12.14`, `FLASK_DEBUG=0`, `OMP_NUM_THREADS=1`, and `OPENBLAS_NUM_THREADS=1`. The thread limits control CPU use, not model logic. Set the health-check path to `/`.
+7. Select the **Free** instance type if Render offers it for your account. Do not select a paid instance or attach a paid database. If Free is unavailable, stop and reassess hosting rather than accepting a charge. No database, disk, API key, or external inference service is needed.
+8. For controlled releases, disable automatic deploys until you want GitHub pushes to update the public site. Click **Create Web Service** only when ready to publish.
+9. Wait for the build/tests and Gunicorn startup to succeed. Render then provides an HTTPS `onrender.com` address. Use that exact address; do not share `127.0.0.1` or a guessed URL.
+10. Test the public page on a phone and computer: submit ordinary and suspicious examples, inspect the result/explanation, press Clear, and test empty input. Share the public address only after verifying it.
+
+Alternatively, `render.yaml` supplies the same configuration for **New → Blueprint**. Review the proposed resources before applying it; it requests a free web service. The manual approach above makes each setting visible. No service has been created by preparing that file.
+
+### Deployment checks and troubleshooting
+
+- Python is pinned in `.python-version` and the Render configuration; scikit-learn 1.6.1 matches both artifacts' saved version. Do not upgrade scikit-learn to fix a loading error without investigating compatibility.
+- Missing model file: verify both `.pkl` files are committed in the root, with exact filenames and case. Gitignore intentionally does not exclude these artifacts.
+- Module import error: check that Root Directory is blank and start command ends in `app:app`.
+- Port errors: use `0.0.0.0:$PORT`; the local Flask address is not a production binding.
+- Debug is explicitly disabled; do not enable Flask debug or Gunicorn reload on the public service.
+- Free services may sleep while idle and take time to wake. A first prediction may need retrying if startup exceeds the frontend's 30-second request timeout. Check current Render free-tier availability and limits before publishing.
+- The application has input-size limits but no authentication or per-client rate limiting. It is a small demonstration, not a production email-security gateway. Do not submit sensitive emails; public hosting also adds network and infrastructure privacy considerations.
+- Run application tests before release. Prior dataset accuracy numbers are not a substitute for endpoint and browser checks, and application tests do not validate those dataset metrics.

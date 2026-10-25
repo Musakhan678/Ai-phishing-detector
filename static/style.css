@@ -120,5 +120,7 @@ button:disabled { opacity: .65; cursor: wait; }
   .hero-copy { display: contents; }
   .hero-copy > * { margin-block: 0; }
   .hero-art { grid-row: 4; }
+  .prediction-guide { padding-inline: 10px; }
+  #ai-explanation > #prediction-guide { margin-inline: -10px; }
 }
 @media (prefers-reduced-motion: reduce) { :root { scroll-behavior: auto; } *, *::before, *::after { transition: none !important; animation: none !important; } }

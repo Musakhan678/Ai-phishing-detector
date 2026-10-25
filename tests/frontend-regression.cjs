@@ -16,6 +16,12 @@ const base = process.env.BASE_URL || 'http://127.0.0.1:5014';
     const errors = [];
     page.on('pageerror', error => errors.push(error.message));
     await page.addInitScript(() => {
+      // Simulate a browser restoring a lower scroll position during page show.
+      window.addEventListener('pageshow', () => {
+        if (sessionStorage.getItem('testRestoreScroll') === 'yes') {
+          window.scrollTo({ top: 1800, behavior: 'instant' });
+        }
+      });
       window.patternScrollCalls = [];
       const original = Element.prototype.scrollIntoView;
       Element.prototype.scrollIntoView = function (options) {
@@ -23,6 +29,28 @@ const base = process.env.BASE_URL || 'http://127.0.0.1:5014';
         return original.call(this, options);
       };
     });
+    await page.goto(base);
+    for (const width of [390, 1440]) {
+      await page.setViewportSize({ width, height: 1000 });
+      await page.goto(base);
+      assert.equal(await page.evaluate(() => window.scrollY), 0);
+      await page.evaluate(() => sessionStorage.setItem('testRestoreScroll', 'yes'));
+      await page.reload();
+      await page.waitForFunction(() => window.scrollY === 0);
+      await page.evaluate(() => sessionStorage.removeItem('testRestoreScroll'));
+      await page.goto(`${base}/#check-email`);
+      await page.waitForFunction(() => Math.abs(document.querySelector('#check-email').getBoundingClientRect().top - 24) < 2);
+      assert.ok((await page.evaluate(() => window.scrollY)) > 0);
+    }
+    // Real history restoration on an anchor-free page must remain untouched.
+    await page.goto(base);
+    await page.evaluate(() => window.scrollTo({ top: 650, behavior: 'instant' }));
+    const savedPosition = await page.evaluate(() => window.scrollY);
+    await page.goto(`${base}/?history-check=1`);
+    await page.goBack();
+    await page.waitForFunction(y => Math.abs(window.scrollY - y) < 2, savedPosition);
+    await page.goForward();
+    await page.waitForFunction(() => window.scrollY === 0);
     await page.goto(base);
     const navigationLock = await page.locator('.brand-lock .lock-body').evaluate(el => getComputedStyle(el).fill);
     assert.equal(navigationLock, 'rgb(65, 105, 225)');
@@ -33,6 +61,7 @@ const base = process.env.BASE_URL || 'http://127.0.0.1:5014';
     assert.equal(await page.locator('.hero-art img').getAttribute('alt'), '');
     await page.locator('.hero-cta').click();
     assert.equal(new URL(page.url()).hash, '#check-email');
+    await page.waitForFunction(() => Math.abs(document.querySelector('#check-email').getBoundingClientRect().top - 24) < 2);
     for (const width of [320, 390, 768, 1440]) {
       await page.setViewportSize({ width, height: 1000 });
       assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);

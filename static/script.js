@@ -1,3 +1,12 @@
+// Start ordinary, anchor-free visits at the hero without overriding deep links
+// or the browser's back/forward scroll restoration (including cached pages).
+window.addEventListener('pageshow', (event) => {
+  const navigation = performance.getEntriesByType('navigation')[0];
+  if (!event.persisted && !location.hash && navigation?.type !== 'back_forward') {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+  }
+});
+
 const form = document.querySelector('#email-form');
 const email = document.querySelector('#email');
 const analyze = document.querySelector('#analyze');

@@ -72,11 +72,17 @@
     <div id="status" role="status" aria-live="polite"></div>
     <section id="result" class="result" aria-labelledby="result-title" hidden>
       <span class="eyebrow">MODEL PREDICTION</span>
-      <h3 id="result-title" tabindex="-1"></h3>
+      <div class="result-heading">
+        <span class="result-indicator" aria-hidden="true">
+          <svg class="indicator-green" viewBox="0 0 32 32" fill="none"><circle cx="16" cy="16" r="13" stroke="currentColor" stroke-width="2.5"/><path d="m9 16 5 5 9-10" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <svg class="indicator-yellow" viewBox="0 0 32 32" fill="none"><path d="M14 5a2.3 2.3 0 0 1 4 0l12 21H2L14 5Z" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"/><path d="M16 12v6m0 4v.2" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>
+          <svg class="indicator-red" viewBox="0 0 32 32" fill="none"><path d="m16 2 12 5v9c0 7-12 14-12 14S4 23 4 16V7l12-5Z" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"/><path d="M16 9v7m0 5v.2" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>
+        </span>
+        <h3 id="result-title" tabindex="-1"></h3>
+      </div>
       <p id="result-detail"></p>
       <section class="advice-section" aria-labelledby="watch-title">
         <h4 id="watch-title">What should you watch out for?</h4>
-        <p class="hint">These are separate text-matching checks, not the AI prediction. We have not checked the sender, links, or websites.</p>
         <p id="warning-empty" hidden>No specific warning signs identified from the text alone. Scams can still be present.</p>
         <ul id="warning-signs" class="warning-signs"></ul>
       </section>
@@ -103,6 +109,7 @@
         <details class="prediction-guide" id="prediction-guide">
           <summary>Technical details</summary>
           <div class="guide-content">
+            <p>These are separate text-matching checks, not the AI prediction. We have not checked the sender, links, or websites.</p>
             <p>TF-IDF turns the email's words and short phrases into numbers that describe their importance. A trained Linear SVM combines those numbers using patterns learned from labeled phishing/scam and legitimate emails.</p>
             <p>An ordinary word such as “package” may push toward phishing, while “password” may push toward legitimate. The model learned statistical associations from its training emails, not universal rules about those words. A password request is not safe just because a word pushes toward legitimate.</p>
             <p>The final prediction combines many text features and the model's baseline, a starting score learned during training. Features can push in opposite directions. The selected patterns above are only part of this calculation, not probabilities or proof of safety.</p>

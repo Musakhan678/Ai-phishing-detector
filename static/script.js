@@ -28,8 +28,10 @@ function renderWarnings(warnings) {
     list.appendChild(item);
   }
 }
-function renderAdvice(advice) {
-  document.querySelector('#advice-introduction').textContent = advice.introduction;
+function renderAdvice(advice, calmResult) {
+  document.querySelector('#advice-introduction').textContent = calmResult
+    ? 'Nothing suspicious stood out in this email. Here are a few simple precautions to keep in mind:'
+    : advice.introduction;
   const list = document.querySelector('.safety-actions');
   list.replaceChildren();
   for (const step of advice.steps) {
@@ -129,15 +131,18 @@ form.addEventListener('submit', async (event) => {
     result.dataset.warningException = String(warningException);
     document.documentElement.dataset.prediction = phishing ? 'phishing' : 'legitimate';
     title.textContent = phishing ? 'Warning: This email may be a scam.'
-      : warningException ? 'The AI did not flag a scam, but text checks found a warning.'
+      : warningException ? 'The AI found no strong scam pattern, but warning signs were detected.'
         : 'No strong scam warning detected';
     detail.textContent = phishing
       ? 'Our AI found text patterns associated with suspicious emails. This is a warning, not proof that the sender is a scammer.'
       : warningException
         ? 'The separate checks found concerning wording. Read the warning signs below before responding. The AI can miss scams.'
-        : 'Our AI did not find a strong scam pattern. It can miss scams and has not verified that this email is safe.';
+        : 'Our AI did not detect strong signs of a scam in this email. However, AI can make mistakes, so remain cautious.';
     renderWarnings(data.warning_signs || []);
-    renderAdvice(data.safety_advice);
+    document.querySelector('#warning-empty').textContent = !phishing && !warningException
+      ? "No specific warning signs were found in the email's text. Stay alert for unusual requests."
+      : 'No specific warning signs identified from the text alone. Scams can still be present.';
+    renderAdvice(data.safety_advice, !phishing && !warningException);
     const explanation = data.explanation;
     analyzedEmail = email.value;
     signalGroups.hidden = !explanation || explanation.recognized_features === 0;

@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="620" viewBox="0 0 640 620" fill="none">
+<!-- Original decorative illustration created for Email Check. No external assets. -->
+<defs>
+  <linearGradient id="shell" x1="200" y1="100" x2="440" y2="390" gradientUnits="userSpaceOnUse"><stop stop-color="white"/><stop offset=".5" stop-color="#F2F6FF"/><stop offset="1" stop-color="#B8C9EE"/></linearGradient>
+  <linearGradient id="blue" x1="130" y1="200" x2="440" y2="420" gradientUnits="userSpaceOnUse"><stop stop-color="#7198FF"/><stop offset=".5" stop-color="#4169E1"/><stop offset="1" stop-color="#2243AA"/></linearGradient>
+  <linearGradient id="face" x1="220" y1="180" x2="430" y2="320" gradientUnits="userSpaceOnUse"><stop stop-color="#263A66"/><stop offset="1" stop-color="#0B1530"/></linearGradient>
+  <linearGradient id="mail" x1="220" y1="360" x2="440" y2="510" gradientUnits="userSpaceOnUse"><stop stop-color="white"/><stop offset="1" stop-color="#DEE8FF"/></linearGradient>
+  <radialGradient id="halo"><stop stop-color="#D9E4FF"/><stop offset="1" stop-color="#EDF3FF" stop-opacity="0"/></radialGradient>
+  <filter id="shadow" x="-40%" y="-30%" width="180%" height="180%"><feDropShadow dx="0" dy="14" stdDeviation="12" flood-color="#213C79" flood-opacity=".14"/></filter>
+</defs>
+<circle cx="320" cy="300" r="285" fill="url(#halo)"/>
+<circle cx="320" cy="300" r="242" stroke="#DDE7FD"/>
+<circle cx="320" cy="300" r="194" stroke="#E5ECFC" stroke-dasharray="5 9"/>
+<ellipse cx="329" cy="549" rx="143" ry="18" fill="#CCD9F6" opacity=".55"/>
+<!-- Rounded feet and body -->
+<g filter="url(#shadow)">
+<rect x="248" y="460" width="54" height="74" rx="26" fill="url(#blue)" transform="rotate(9 248 460)"/>
+<rect x="355" y="460" width="54" height="74" rx="26" fill="url(#blue)" transform="rotate(-8 355 460)"/>
+<ellipse cx="270" cy="532" rx="49" ry="21" fill="url(#shell)"/>
+<ellipse cx="386" cy="532" rx="49" ry="21" fill="url(#shell)"/>
+<rect x="234" y="325" width="186" height="167" rx="72" fill="url(#shell)"/>
+<rect x="296" y="309" width="61" height="35" rx="14" fill="url(#blue)"/>
+<!-- Antenna -->
+<path d="M326 137V102" stroke="#4169E1" stroke-width="10" stroke-linecap="round"/>
+<circle cx="326" cy="92" r="14" fill="url(#blue)"/><circle cx="322" cy="88" r="4" fill="#C1D5FF"/>
+<!-- Ears and head -->
+<rect x="163" y="206" width="43" height="83" rx="21" fill="url(#blue)"/>
+<rect x="446" y="206" width="43" height="83" rx="21" fill="url(#blue)"/>
+<rect x="187" y="135" width="278" height="202" rx="89" fill="url(#shell)"/>
+<path d="M210 198C217 162 251 151 292 151" stroke="white" stroke-opacity=".8" stroke-width="9" stroke-linecap="round"/>
+<rect x="211" y="177" width="230" height="128" rx="51" fill="url(#face)"/>
+<rect x="255" y="211" width="23" height="35" rx="11.5" fill="#8BDDF1"/>
+<rect x="374" y="211" width="23" height="35" rx="11.5" fill="#8BDDF1"/>
+<path d="M297 263Q326 284 355 263" stroke="#8BDDF1" stroke-width="7" stroke-linecap="round"/>
+<!-- Arms behind envelope -->
+<path d="M240 365Q190 369 192 419" stroke="url(#blue)" stroke-width="43" stroke-linecap="round"/>
+<path d="M414 364Q459 375 458 418" stroke="url(#blue)" stroke-width="43" stroke-linecap="round"/>
+<!-- Envelope -->
+<g transform="rotate(-7 326 433)">
+<rect x="204" y="365" width="244" height="145" rx="17" fill="url(#mail)" stroke="#C3D2F1"/>
+<path d="M208 375L316 449Q326 457 336 449L444 375" stroke="#B8C9EC" stroke-width="3"/>
+<path d="M211 499L285 437M440 499L367 437" stroke="#C7D5F0" stroke-width="2"/>
+<circle cx="326" cy="434" r="30" fill="url(#blue)"/>
+<path d="M326 416L341 422V433C341 444 326 451 326 451S311 444 311 433V422L326 416Z" stroke="white" stroke-width="2.5"/>
+<path d="M319 433L324 438L334 428" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+</g>
+<ellipse cx="204" cy="430" rx="18" ry="26" fill="url(#shell)" transform="rotate(-18 204 430)"/>
+<ellipse cx="448" cy="413" rx="18" ry="26" fill="url(#shell)" transform="rotate(18 448 413)"/>
+</g>
+<!-- Decorative interface fragments -->
+<g transform="rotate(-8 132 170)"><rect x="78" y="141" width="95" height="57" rx="15" fill="white" stroke="#E0E8FA"/><path d="M98 161H150M98 175H133" stroke="#9EB5ED" stroke-width="5" stroke-linecap="round"/></g>
+<g transform="rotate(9 509 340)"><rect x="481" y="307" width="65" height="65" rx="20" fill="white" stroke="#DFE8FA"/><path d="M514 324L528 330V340C528 350 514 357 514 357S500 350 500 340V330L514 324Z" stroke="#4169E1" stroke-width="3"/></g>
+<circle cx="500" cy="156" r="7" fill="#A6BCF5"/><circle cx="119" cy="350" r="5" fill="#4169E1"/>
+<path d="M451 95V111M443 103H459" stroke="#93AEF2" stroke-width="3" stroke-linecap="round"/>
+</svg>

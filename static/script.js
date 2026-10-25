@@ -91,6 +91,7 @@ function resetResult() {
   selectedPattern.hidden = true;
   document.querySelector('#selected-pattern-context').textContent = '';
   delete document.documentElement.dataset.prediction;
+  delete result.dataset.warningException;
   result.hidden = true;
   statusMessage.textContent = '';
   statusMessage.className = '';
@@ -125,6 +126,7 @@ form.addEventListener('submit', async (event) => {
     if (data.prediction !== 0 && data.prediction !== 1) throw new Error('Unexpected response. Please try again.');
     const phishing = data.prediction === 1;
     const warningException = !phishing && (data.warning_signs || []).length > 0;
+    result.dataset.warningException = String(warningException);
     document.documentElement.dataset.prediction = phishing ? 'phishing' : 'legitimate';
     title.textContent = phishing ? 'Warning: This email may be a scam.'
       : warningException ? 'The AI did not flag a scam, but text checks found a warning.'

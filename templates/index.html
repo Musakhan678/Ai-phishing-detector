@@ -8,8 +8,10 @@
   <script src="{{ url_for('static', filename='script.js') }}" defer></script>
 </head>
 <body>
-<main class="container">
-  <header>
+<a class="skip-link" href="#check-email">Skip to email checker</a>
+<header class="site-header">
+  <nav class="nav-shell" aria-label="Main navigation">
+    <a class="brand" href="#home">
     <svg class="brand-lock" xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" fill="none" aria-hidden="true">
       <rect class="lock-tile" width="64" height="64" rx="18"/>
       <path class="lock-shackle" d="M23 29v-8a9 9 0 0 1 18 0v8" stroke-width="3.5" stroke-linecap="round"/>
@@ -17,12 +19,47 @@
       <circle cx="32" cy="38" r="3" fill="#F2F6F4"/>
       <path d="M32 40v5" stroke="#F2F6F4" stroke-width="3" stroke-linecap="round"/>
     </svg>
-    <span class="eyebrow">EMAIL CHECK</span>
-    <h1>A second look at<br>your inbox.</h1>
-    <p class="intro">Check an email for possible scam warnings. We cannot verify who sent it or whether it is safe.</p>
-  </header>
-  <section class="card" aria-labelledby="form-title">
-    <h2 id="form-title">Check an email</h2>
+      <span>AI Phishing Detector</span>
+    </a>
+    <div class="nav-links">
+      <a href="#home">Home</a>
+      <a href="#how-it-works">How It Works</a>
+      <a class="nav-cta" href="#check-email">Check an Email <span aria-hidden="true">→</span></a>
+    </div>
+  </nav>
+</header>
+<main id="home">
+  <section class="hero page-shell" aria-labelledby="hero-title">
+    <div class="hero-copy">
+      <p class="eyebrow"><span class="small-dot" aria-hidden="true"></span> A little clarity for your inbox</p>
+      <h1 id="hero-title">Not Sure If an<br>Email Is <span>Safe?</span></h1>
+      <p class="intro">Check emails for suspicious patterns, understand potential warning signs, and get simple advice on what to do next.</p>
+      <a class="button hero-cta" href="#check-email">Check an Email <span aria-hidden="true">→</span></a>
+      <p class="hero-note">No sign-up needed. Just paste the email text.</p>
+    </div>
+    <div class="hero-art" aria-hidden="true">
+      <div class="art-label"><span class="small-dot"></span> A helping hand for your inbox</div>
+      <img src="{{ url_for('static', filename='ai-assistant.svg') }}" alt="" width="640" height="620" fetchpriority="high">
+      <div class="art-caption"><span>AI-assisted insight</span><span>Human judgment, always.</span></div>
+    </div>
+  </section>
+  <section class="how-section" id="how-it-works" aria-labelledby="how-title">
+    <div class="page-shell">
+      <p class="eyebrow">A clearer next step</p>
+      <h2 id="how-title">A simple check. A more informed you.</h2>
+      <div class="steps-grid">
+        <article class="step"><span class="step-icon" aria-hidden="true">01 <span>▤</span></span><h3>Paste an Email</h3><p>Copy the text of an email you want to check.</p></article>
+        <article class="step"><span class="step-icon" aria-hidden="true">02 <span>⌕</span></span><h3>Analyze</h3><p>Our AI examines the text for patterns associated with suspicious emails.</p></article>
+        <article class="step"><span class="step-icon" aria-hidden="true">03 <span>☷</span></span><h3>Understand the Results</h3><p>Review potential warning signs and simple advice before deciding what to do.</p></article>
+      </div>
+      <p class="how-disclaimer">A helpful second look, not a safety guarantee. This tool cannot verify senders, links, or websites.</p>
+    </div>
+  </section>
+  <div class="analysis-shell page-shell">
+  <section class="card" id="check-email" aria-labelledby="form-title">
+    <div class="card-heading"><span class="section-kicker">EMAIL ANALYSIS</span><span class="text-badge">Text-based check</span></div>
+    <h2 id="form-title">Let’s take a closer look.</h2>
+    <p class="form-intro">Paste your email below. We’ll help you understand the warning signs.</p>
     <form id="email-form" action="{{ url_for('predict') }}">
       <label for="email">Email text</label>
       <p class="hint" id="email-hint">Include the subject and message body. Remove personal details you don’t want to submit.</p>
@@ -82,7 +119,8 @@
     </section>
     <noscript><p>Enable JavaScript to analyze emails on this page.</p></noscript>
   </section>
-  <footer>Predictions can be wrong. A legitimate prediction does not guarantee safety; verify unusual requests through a trusted channel.</footer>
+  </div>
+  <footer class="site-footer page-shell"><span class="footer-brand">AI Phishing Detector</span><p>Predictions can be wrong. A legitimate prediction does not guarantee safety; verify unusual requests through a trusted channel.</p><a href="#check-email">Back to email checker ↑</a></footer>
 </main>
 </body>
 </html>

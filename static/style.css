@@ -116,4 +116,9 @@ button:disabled { opacity: .65; cursor: wait; }
 @media (max-width: 900px) { .hero { gap: 24px; padding-block: 50px; } .hero-art { padding: 18px 10px; } .nav-links { gap: 18px; } .nav-links a { font-size: .8rem; } .brand { font-size: .92rem; } .steps-grid { gap: 24px; } }
 @media (max-width: 720px) { .page-shell, .nav-shell { width: calc(100% - 36px); } .nav-shell { flex-wrap: wrap; gap: 8px; padding-block: 16px; } .nav-links { width: 100%; justify-content: space-between; gap: 10px; } .nav-links .nav-cta { padding: 6px 10px; } .hero { grid-template-columns: 1fr; padding-block: 40px; gap: 30px; } h1 { font-size: clamp(2.5rem, 9vw, 3.8rem); } .hero-art { width: min(440px, 100%); justify-self: center; } .hero-cta { width: 100%; } .steps-grid { grid-template-columns: 1fr; gap: 26px; } .step { padding-bottom: 22px; border-bottom: 1px solid #dce4f3; } .step:last-child { border: 0; padding-bottom: 0; } .how-section { padding-block: 42px; } .analysis-shell { padding-block: 42px 24px; } .card { padding: 24px; border-radius: 18px; } .result { padding: 22px; } }
 @media (max-width: 400px) { .card { padding: 18px; } .result { padding: 18px; } .actions { gap: 10px; } #analyze { width: 100%; min-width: 0; } .secondary { width: 100%; } .art-caption { font-size: .6rem; } .brand { font-size: .9rem; } }
+@media (max-width: 720px) {
+  .hero-copy { display: contents; }
+  .hero-copy > * { margin-block: 0; }
+  .hero-art { grid-row: 4; }
+}
 @media (prefers-reduced-motion: reduce) { :root { scroll-behavior: auto; } *, *::before, *::after { transition: none !important; animation: none !important; } }

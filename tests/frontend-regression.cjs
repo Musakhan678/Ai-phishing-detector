@@ -15,8 +15,17 @@ const base = process.env.BASE_URL || 'http://127.0.0.1:5014';
     const page = await browser.newPage();
     const errors = [];
     page.on('pageerror', error => errors.push(error.message));
+    await page.addInitScript(() => {
+      window.patternScrollCalls = [];
+      const original = Element.prototype.scrollIntoView;
+      Element.prototype.scrollIntoView = function (options) {
+        if (this.id === 'selected-pattern') window.patternScrollCalls.push(options);
+        return original.call(this, options);
+      };
+    });
     await page.goto(base);
     const navigationLock = await page.locator('.brand-lock .lock-body').evaluate(el => getComputedStyle(el).fill);
+    assert.equal(navigationLock, 'rgb(65, 105, 225)');
     for (const href of ['#home', '#how-it-works', '#check-email']) {
       assert.equal(await page.locator(href).count(), 1);
     }
@@ -59,6 +68,8 @@ const base = process.env.BASE_URL || 'http://127.0.0.1:5014';
       assert.equal(await page.locator('#warning-signs li').count(), data.warning_signs.length);
       const state = data.prediction === 1 ? 'red' : calmResult ? 'green' : 'yellow';
       assert.equal(await page.locator(`.indicator-${state}`).isVisible(), true);
+      assert.equal(await page.locator(`.indicator-${state}`).evaluate(el => getComputedStyle(el).color),
+        { green: 'rgb(36, 103, 71)', red: 'rgb(193, 59, 80)', yellow: 'rgb(121, 83, 0)' }[state]);
       assert.equal(await page.locator('.result-indicator svg:visible').count(), 1);
       assert.equal(await page.locator('.brand-lock .lock-body').evaluate(el => getComputedStyle(el).fill), navigationLock);
       const colors = await page.locator('#result').evaluate(el => ({
@@ -109,9 +120,35 @@ const base = process.env.BASE_URL || 'http://127.0.0.1:5014';
       await page.keyboard.press('Enter');
       assert.equal(await page.locator('#ai-explanation').evaluate(el => el.open), true);
       if (await page.locator('.pattern-button').count()) {
-        await page.locator('.pattern-button').first().click();
+        const reduceMotion = disagreement;
+        await page.emulateMedia({ reducedMotion: reduceMotion ? 'reduce' : 'no-preference' });
+        if (disagreement) await page.setViewportSize({ width: 390, height: 844 });
+        const button = page.locator('.pattern-button').first();
+        const callsBefore = await page.evaluate(() => window.patternScrollCalls.length);
+        if (['prize_scam', 'disagreement', 'quick_favor_disagreement'].includes(name)) {
+          await button.focus();
+          await page.keyboard.press('Enter');
+        } else {
+          await button.click();
+        }
         assert.equal(await page.locator('#selected-pattern').isVisible(), true);
         assert.equal(await page.locator('#prediction-guide').evaluate(el => el.open), true);
+        await page.waitForFunction(before => window.patternScrollCalls.length > before, callsBefore);
+        assert.deepEqual(await page.evaluate(() => window.patternScrollCalls.at(-1)), {
+          behavior: reduceMotion ? 'instant' : 'smooth', block: 'nearest', inline: 'nearest',
+        });
+        await page.waitForFunction(() => {
+          const rect = document.querySelector('#selected-pattern').getBoundingClientRect();
+          return rect.top >= -1 && rect.bottom <= innerHeight + 1;
+        });
+        assert.equal(await button.evaluate(el => document.activeElement === el), true);
+        // If already visible, choosing the same feature must not scroll farther.
+        const position = await page.evaluate(() => window.scrollY);
+        await button.evaluate(el => el.click());
+        await page.waitForFunction(before => window.patternScrollCalls.length > before + 1, callsBefore);
+        await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+        assert.ok(Math.abs((await page.evaluate(() => window.scrollY)) - position) <= 1);
+        await page.emulateMedia({ reducedMotion: 'no-preference' });
       }
       await page.locator('#clear').click();
       assert.equal(await page.locator('#result').isVisible(), false);

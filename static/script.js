@@ -64,6 +64,17 @@ function showPattern(signal) {
   selectedPattern.hidden = false;
   predictionGuide.open = true;
   aiExplanation.open = true;
+  // Wait for the disclosures to lay out, then move only as far as necessary.
+  // Keep focus on the activating button; the existing live region announces
+  // the explanation without introducing an unexpected keyboard focus change.
+  requestAnimationFrame(() => {
+    if (selectedPattern.hidden || result.hidden) return;
+    selectedPattern.scrollIntoView({
+      behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth',
+      block: 'nearest',
+      inline: 'nearest',
+    });
+  });
 }
 function renderSignals(id, signals) {
   const list = document.querySelector(id);

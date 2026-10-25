@@ -140,7 +140,7 @@ form.addEventListener('submit', async (event) => {
     const phishing = data.prediction === 1;
     const warningException = !phishing && (data.warning_signs || []).length > 0;
     result.dataset.warningException = String(warningException);
-    document.documentElement.dataset.prediction = phishing ? 'phishing' : 'legitimate';
+    document.documentElement.dataset.prediction = phishing ? 'phishing' : warningException ? 'warning' : 'legitimate';
     title.textContent = phishing ? 'Warning: This email may be a scam.'
       : warningException ? 'The AI found no strong scam pattern, but warning signs were detected.'
         : 'No strong scam warning detected';

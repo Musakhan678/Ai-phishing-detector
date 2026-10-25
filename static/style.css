@@ -16,6 +16,15 @@ button, a, summary { -webkit-tap-highlight-color: transparent; }
 .lock-tile { fill: #edf2ff; transition: fill .3s ease; }
 .lock-shackle { stroke: #4169e1; transition: stroke .3s ease; }
 .lock-body { fill: #4169e1; transition: fill .3s ease; }
+:root[data-prediction="legitimate"] .lock-tile { fill: #e4f3ea; }
+:root[data-prediction="legitimate"] .lock-shackle { stroke: #246747; }
+:root[data-prediction="legitimate"] .lock-body { fill: #246747; }
+:root[data-prediction="phishing"] .lock-tile { fill: #fbe1e6; }
+:root[data-prediction="phishing"] .lock-shackle { stroke: #c13b50; }
+:root[data-prediction="phishing"] .lock-body { fill: #c13b50; }
+:root[data-prediction="warning"] .lock-tile { fill: #fff3bc; }
+:root[data-prediction="warning"] .lock-shackle { stroke: #a87900; }
+:root[data-prediction="warning"] .lock-body { fill: #a87900; }
 .nav-links { display: flex; align-items: center; gap: 28px; }
 .nav-links a { display: inline-flex; align-items: center; min-height: 44px; color: #394862; text-decoration: none; font-size: .9rem; font-weight: 600; }
 .nav-links a:hover { color: #284fc3; }

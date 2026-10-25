@@ -71,7 +71,8 @@ const base = process.env.BASE_URL || 'http://127.0.0.1:5014';
       assert.equal(await page.locator(`.indicator-${state}`).evaluate(el => getComputedStyle(el).color),
         { green: 'rgb(36, 103, 71)', red: 'rgb(193, 59, 80)', yellow: 'rgb(121, 83, 0)' }[state]);
       assert.equal(await page.locator('.result-indicator svg:visible').count(), 1);
-      assert.equal(await page.locator('.brand-lock .lock-body').evaluate(el => getComputedStyle(el).fill), navigationLock);
+      await page.waitForFunction(color => getComputedStyle(document.querySelector('.brand-lock .lock-body')).fill === color,
+        { green: 'rgb(36, 103, 71)', red: 'rgb(193, 59, 80)', yellow: 'rgb(168, 121, 0)' }[state]);
       const colors = await page.locator('#result').evaluate(el => ({
         background: getComputedStyle(el).backgroundColor,
         topBorder: getComputedStyle(el).borderTopColor,

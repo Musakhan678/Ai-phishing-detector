@@ -86,6 +86,11 @@ def google_site_verification():
     return send_from_directory(app.static_folder, 'googleba5025845859c5bf.html')
 
 
+@app.get('/sitemap.xml')
+def sitemap():
+    return send_from_directory(app.static_folder, 'sitemap.xml', mimetype='application/xml')
+
+
 @app.post('/predict')
 def predict():
     if not request.is_json:

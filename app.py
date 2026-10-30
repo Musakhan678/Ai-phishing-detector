@@ -3,7 +3,7 @@ from pathlib import Path
 import re
 import joblib
 from safety import detect_warning_signs, build_safety_advice
-from flask import Flask, jsonify, render_template, request
+from flask import Flask, jsonify, render_template, request, send_from_directory
 from werkzeug.exceptions import BadRequest, RequestEntityTooLarge
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -79,6 +79,11 @@ def explain_features(features, limit=3):
 @app.get('/')
 def index():
     return render_template('index.html')
+
+
+@app.get('/googleba5025845859c5bf.html')
+def google_site_verification():
+    return send_from_directory(app.static_folder, 'googleba5025845859c5bf.html')
 
 
 @app.post('/predict')
